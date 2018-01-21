@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 
 def PairwiseEuclidian(X,Y):
-    return tf.reduce_sum((tf.expand_dims(X, 1) - tf.expand_dims(Z, 0))**2, 2)
+    return tf.reduce_sum((tf.expand_dims(X, 1) - tf.expand_dims(Y, 0))**2, 2)
 
 def PickKNearest(distMatrix, k):
 	dists, indices_k = tf.nn.top_k(-distMatrix, k)
@@ -14,7 +14,9 @@ def PickKNearest(distMatrix, k):
 	#This creates a tensor of shape [trainingNums], then expands it for the
 	#element wise comparison in tf.equal
 	index = tf.range(trainingNums)
+	print(sess.run(indices_k))
 	index = tf.expand_dims(index, 1)
+	
 
 	#This prepares the tensor for the element wise comparison
 	indices_k = tf.expand_dims(indices_k, 1)
