@@ -1,10 +1,11 @@
+import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 
 def data_segmentation(data_path, target_path, task):
 	# task = 0 >> select the name ID targets for face recognition task
 	# task = 1 >> select the gender ID targets for gender recognition task 
-	data = np.load(data_path)/255
+	data = np.load(data_path)/255.0
 	data = np.reshape(data, [-1, 32*32])
 	target = np.load(target_path)
 	np.random.seed(45689)
@@ -38,6 +39,10 @@ def predict(R, Y):
 def predictClass(entries, index):
 	out, bad, count = tf.unique_with_counts(entries[index])
 	return tf.gather(out, tf.argmax(count))
+################################################################################
+
+def DrawImage():
+	return 0
 
 ################################################################################
 
@@ -69,17 +74,32 @@ for k in ks:
 	error = tf.constant([0], tf.float32)
 
 	# Make a prediction for every input
+	failureFound = False;
 	for i in range(0, (validTarget.shape)[0]):
 		guess = predictClass(entries, i)
 		actual = targetData[i]
 		error = tf.add(error,tf.to_float(tf.not_equal(guess, actual)))
+
+		if k == 10 and not failureFound and tf.reduce_any(tf.not_equal(guess, actual)).eval():
+			# Find the first failure
+			failureFound = True
+			
+			# Display the failure case
+			failureImgArray = tf.reshape(tf.cast(trainData[i], tf.float32), [32,32,1])
+
+			# Convert the dimensions from grayscale to RGB
+			failureImgArray = tf.tile(failureImgArray, [1,1,3])
+
+			print(failureImgArray.eval())
+			imgplot = plt.imshow(failureImgArray.eval())
+			plt.show()
 
 	# Update the minimum error and k values
 	if sess.run(error) < sess.run(minError):
 		mink = k
 	minError = tf.where(tf.less(error, minError), error, minError)
 	
-
+	
 
 
 print("The minimum error occurs when k = %d" %minK)
