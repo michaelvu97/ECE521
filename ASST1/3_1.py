@@ -41,7 +41,23 @@ def predictClass(entries, index):
 	return tf.gather(out, tf.argmax(count))
 ################################################################################
 
-def DrawImage():
+"""
+
+Takes a [(32^2)] float32 shape array for a grayscale image and plots it using 
+matplotlib.
+
+"""
+def DrawImage(imgArray):
+
+	imgArray = tf.reshape(tf.cast(trainData[i], tf.float32), [32,32,1])
+
+	# Convert the dimensions from grayscale to RGB
+	imgArray = tf.tile(imgArray, [1,1,3])
+
+	print(imgArray.eval())
+	imgplot = plt.imshow(imgArray.eval())
+	plt.show()
+	
 	return 0
 
 ################################################################################
@@ -85,14 +101,8 @@ for k in ks:
 			failureFound = True
 			
 			# Display the failure case
-			failureImgArray = tf.reshape(tf.cast(trainData[i], tf.float32), [32,32,1])
-
-			# Convert the dimensions from grayscale to RGB
-			failureImgArray = tf.tile(failureImgArray, [1,1,3])
-
-			print(failureImgArray.eval())
-			imgplot = plt.imshow(failureImgArray.eval())
-			plt.show()
+			DrawImage(tf.cast(trainData[i], tf.float32));
+			
 
 	# Update the minimum error and k values
 	if sess.run(error) < sess.run(minError):
