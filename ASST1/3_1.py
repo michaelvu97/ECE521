@@ -49,12 +49,12 @@ matplotlib.
 """
 def DrawImage(imgArray):
 
-	imgArray = tf.reshape(tf.cast(trainData[i], tf.float32), [32,32,1])
+	imgArray = tf.reshape(imgArray, [32,32,1])
 
 	# Convert the dimensions from grayscale to RGB
 	imgArray = tf.tile(imgArray, [1,1,3])
 
-	print(imgArray.eval())
+	#print(imgArray.eval())
 	imgplot = plt.imshow(imgArray.eval())
 	plt.show()
 	
@@ -101,7 +101,18 @@ for k in ks:
 			failureFound = True
 			
 			# Display the failure case
-			DrawImage(tf.cast(trainData[i], tf.float32));
+			DrawImage(tf.cast(validData[i], tf.float32));
+			badIndices = PickKNearest(PairwiseEuclidian(tf.expand_dims(validData[i], 0), trainData), k)[i]
+			# print(sess.run(tf.shape(badIndices)))
+
+			# print(badIndices.shape[0])
+
+			for j in range(0, (badIndices.shape)[0]):
+				badImage = tf.gather(trainData, badIndices[j])
+				#print(sess.run(badImage))
+				DrawImage(tf.cast(badImage, tf.float32))
+
+
 			
 
 	# Update the minimum error and k values
@@ -109,7 +120,8 @@ for k in ks:
 		mink = k
 	minError = tf.where(tf.less(error, minError), error, minError)
 	
-	
+
+
 
 
 print("The minimum error occurs when k = %d" %minK)
