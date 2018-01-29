@@ -62,6 +62,9 @@ def DrawImage(imgArray):
 
 ################################################################################
 
+names = ['Lorraine Bracco', 'Gerard Butler', 'Peri Gilpin', 'Angie Harmon',\
+		'Daniel Radcliffe', 'Michael Vartan']
+
 init = tf.global_variables_initializer()
 
 
@@ -101,7 +104,9 @@ for k in ks:
 			failureFound = True
 			
 			# Display the failure case
-			plt.title("INCORRECTLY CLASSIFIED IMAGE")
+			plt.title("{} misclassified as {}" \
+					.format(names[actual.eval()], names[guess.eval()]))
+
 			DrawImage(tf.cast(validData[i], tf.float32));
 			badIndices = PickKNearest(PairwiseEuclidian(tf.expand_dims(validData[i], 0), trainData), k)[i]
 			# print(sess.run(tf.shape(badIndices)))
