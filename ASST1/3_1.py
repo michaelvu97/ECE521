@@ -54,7 +54,7 @@ def DrawImage(imgArray):
 	# Convert the dimensions from grayscale to RGB
 	imgArray = tf.tile(imgArray, [1,1,3])
 
-	#print(imgArray.eval())
+	# print(imgArray.eval())
 	imgplot = plt.imshow(imgArray.eval())
 	plt.show()
 	
@@ -101,6 +101,7 @@ for k in ks:
 			failureFound = True
 			
 			# Display the failure case
+			plt.title("INCORRECTLY CLASSIFIED IMAGE")
 			DrawImage(tf.cast(validData[i], tf.float32));
 			badIndices = PickKNearest(PairwiseEuclidian(tf.expand_dims(validData[i], 0), trainData), k)[i]
 			# print(sess.run(tf.shape(badIndices)))
@@ -110,6 +111,7 @@ for k in ks:
 			for j in range(0, (badIndices.shape)[0]):
 				badImage = tf.gather(trainData, badIndices[j])
 				#print(sess.run(badImage))
+				plt.title("Nearest images to the misclassified image")
 				DrawImage(tf.cast(badImage, tf.float32))
 
 
