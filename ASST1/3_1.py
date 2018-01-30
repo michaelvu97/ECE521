@@ -71,7 +71,7 @@ init = tf.global_variables_initializer()
 sess = tf.InteractiveSession()
 sess.run(init)
 
-trainData, validData, testData, trainTarget, validTarget, testTarget = data_segmentation('data.npy', 'target.npy', 0)
+trainData, validData, testData, trainTarget, validTarget, testTarget = data_segmentation('data.npy', 'target.npy', 1)
 
 Y = tf.constant(trainTarget)
 targetData = tf.constant(validTarget)
@@ -108,8 +108,9 @@ for k in ks:
 					.format(names[actual.eval()], names[guess.eval()]))
 
 			DrawImage(tf.cast(validData[i], tf.float32));
-			badIndices = PickKNearest(PairwiseEuclidian(tf.expand_dims(validData[i], 0), trainData), k)[i]
-			# print(sess.run(tf.shape(badIndices)))
+			badIndices = PickKNearest(PairwiseEuclidian(tf.expand_dims(validData[i], 0), trainData), k)[0]
+
+			#print(sess.run(badIndices))
 
 			# print(badIndices.shape[0])
 
