@@ -2,9 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 
-def data_segmentation(data_path, target_path, task):
+def data_segmentation(data_path, target_path, t):
 	# task = 0 >> select the name ID targets for face recognition task
 	# task = 1 >> select the gender ID targets for gender recognition task 
+	task = 0
+	if t:
+		task = 1 
 	data = np.load(data_path)/255.0
 	data = np.reshape(data, [-1, 32*32])
 	target = np.load(target_path)
@@ -65,13 +68,17 @@ def DrawImage(imgArray):
 names = ['Lorraine Bracco', 'Gerard Butler', 'Peri Gilpin', 'Angie Harmon',\
 		'Daniel Radcliffe', 'Michael Vartan']
 
+genders = ['Male', 'Female']
+
 init = tf.global_variables_initializer()
 
 
 sess = tf.InteractiveSession()
 sess.run(init)
 
-trainData, validData, testData, trainTarget, validTarget, testTarget = data_segmentation('data.npy', 'target.npy', 1)
+# Selects gender instead of name
+use_genders = True
+trainData, validData, testData, trainTarget, validTarget, testTarget = data_segmentation('data.npy', 'target.npy', use_genders)
 
 Y = tf.constant(trainTarget)
 targetData = tf.constant(validTarget)
@@ -95,7 +102,11 @@ for k in ks:
 	# Make a prediction for every input
 	failureFound = False;
 	for i in range(0, (validTarget.shape)[0]):
+
+		# Predicted label
 		guess = predictClass(entries, i)
+
+		# The true label
 		actual = targetData[i]
 		error = tf.add(error,tf.to_float(tf.not_equal(guess, actual)))
 
@@ -104,10 +115,15 @@ for k in ks:
 			failureFound = True
 			
 			# Display the failure case
-			plt.title("{} misclassified as {}" \
-					.format(names[actual.eval()], names[guess.eval()]))
+			if use_genders:
+				plt.title("{} misclassified as {}" \
+						.format(genders[actual.eval()], genders[guess.eval()]))
+			else:
+				plt.title("{} misclassified as {}" \
+						.format(names[actual.eval()], names[guess.eval()]))
 
 			DrawImage(tf.cast(validData[i], tf.float32));
+
 			badIndices = PickKNearest(PairwiseEuclidian(tf.expand_dims(validData[i], 0), trainData), k)[0]
 
 			#print(sess.run(badIndices))
