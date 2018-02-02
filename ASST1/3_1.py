@@ -191,56 +191,47 @@ print("Number percent error in the test set when k = %d is %f" \
 		 % (minK, sess.run(error)) )
 
 
-################################################################################
-#
-# MERT PLEASE COMMENT ON WHAT IS HAPPENING IN THIS SECTION
-#
-################################################################################
+# Repeat the exact same steps for above, except fix k at 10 and display the first error case we
+# encounter, including its 10 nearest neighbours 
+K_2 = 10
 
-K_2 = [10]
-for k in K_2:
+# Get the indices of the k-nearest training data -> new input
+indices = PickKNearest(PairwiseEuclidian(testData, trainData), K_2)
 
-	# Get the indices of the k-nearest training data -> new input
-	indices = PickKNearest(PairwiseEuclidian(testData, trainData), k)
+# Get the classes of the k-nearest training data
+entries = tf.gather(Y, indices)
 
-	# Get the classes of the k-nearest training data
-	entries = tf.gather(Y, indices)
+# Initialize error to 0
+error = tf.constant([0], tf.float32)
 
-	# Initialize error to 0
-	error = tf.constant([0], tf.float32)
+# Make a prediction for every input
+failureFound = False;
+for i in range(0, (testTarget.shape)[0]):
 
-	# Make a prediction for every input
-	failureFound = False;
-	for i in range(0, (testTarget.shape)[0]):
+	# Predicted label
+	guess = predictClass(entries, i)
 
-		# Predicted label
-		guess = predictClass(entries, i)
+	# The true label
+	actual = targetData[i]
+	error = tf.add(error,tf.to_float(tf.not_equal(guess, actual)))
 
-		# The true label
-		actual = targetData[i]
-		error = tf.add(error,tf.to_float(tf.not_equal(guess, actual)))
-
-		if k == 10 and not failureFound \
-				and tf.reduce_any(tf.not_equal(guess, actual)).eval():
-
-			# Find the first failure
-			failureFound = True
-			
-			# Display the failure case
-			if use_genders:
-				plt.title("{} misclassified as {}" \
-						.format(genders[actual.eval()], genders[guess.eval()]))
-			else:
-				plt.title("{} misclassified as {}" \
-						.format(names[actual.eval()], names[guess.eval()]))
-
+	if not failureFound \
+		and tf.reduce_any(tf.not_equal(guess, actual)).eval():
+		# Find the first failure
+		failureFound = True
+		
+		# Display the failure case
+		if use_genders:
+			plt.title("{} misclassified as {}" \
+					.format(genders[actual.eval()], genders[guess.eval()]))
+		else:
+			plt.title("{} misclassified as {}" \
+					.format(names[actual.eval()], names[guess.eval()]))
 			DrawImage(tf.cast(testData[i], tf.float32));
-
 			badIndices = PickKNearest(PairwiseEuclidian(\
-					tf.expand_dims(testData[i], 0), trainData), k)[0]
+				tf.expand_dims(testData[i], 0), trainData), K_2)[0]
 
-			for j in range(0, (badIndices.shape)[0]):
-				
-				badImage = tf.gather(trainData, badIndices[j])
-				plt.title("Nearest images to the misclassified image")
-				DrawImage(tf.cast(badImage, tf.float32))
+		for j in range(0, (badIndices.shape)[0]):
+			badImage = tf.gather(trainData, badIndices[j])
+			plt.title("Nearest images to the misclassified image")
+			DrawImage(tf.cast(badImage, tf.float32))
