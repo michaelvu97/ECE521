@@ -132,33 +132,6 @@ for k in K:
 		# The true label
 		actual = targetData[i]
 		error = tf.add(error,tf.to_float(tf.not_equal(guess, actual)))
-		"""
-		if k == 10 and not failureFound and tf.reduce_any(tf.not_equal(guess, actual)).eval():
-			# Find the first failure
-			failureFound = True
-			
-			# Display the failure case
-			if use_genders:
-				plt.title("{} misclassified as {}" \
-						.format(genders[actual.eval()], genders[guess.eval()]))
-			else:
-				plt.title("{} misclassified as {}" \
-						.format(names[actual.eval()], names[guess.eval()]))
-
-			DrawImage(tf.cast(validData[i], tf.float32));
-
-			badIndices = PickKNearest(PairwiseEuclidian(tf.expand_dims(validData[i], 0), trainData), k)[0]
-
-			#print(sess.run(badIndices))
-
-			# print(badIndices.shape[0])
-
-			for j in range(0, (badIndices.shape)[0]):
-				badImage = tf.gather(trainData, badIndices[j])
-				#print(sess.run(badImage))
-				plt.title("Nearest images to the misclassified image")
-				DrawImage(tf.cast(badImage, tf.float32))
-		"""
 
 	# Update the minimum error and k values
 	if sess.run(error) < sess.run(minError):
