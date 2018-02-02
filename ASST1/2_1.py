@@ -49,8 +49,21 @@ sess.run(init)
 The format of the input matrix is the same as the output of part 1, where X is 
 the new data and Z is the trained data.
 '''
-X = tf.constant([[1,2],[3,4],[9,3]])
-Z = tf.constant([[8,2],[3,4],[3,6],[3,3],[12,34],[0,0]])
+X = tf.constant( \
+	[
+		[1,2],
+		[3,4],
+		[9,3]
+	])
+Z = tf.constant( \
+	[
+		[8,2],
+		[3,4],
+		[3,6],
+		[3,3],
+		[12,34],
+		[0,0]
+	])
 
 print(sess.run(PairwiseEuclidian(X,Z)))
 print(sess.run(PickKNearest(PairwiseEuclidian(X,Z), 3)))
