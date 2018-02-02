@@ -32,7 +32,7 @@ def PickKNearest(distMatrix, k):
 
 def MSE(Ytest, Ynew):
 	numEntries = tf.shape(validY)[0]
-	return tf.reduce_mean(tf.reduce_sum((Ynew - Ytest)**2,1))
+	return tf.reduce_mean(tf.reduce_sum(((Ynew - Ytest)**2)/2,1))
 
 
 
@@ -77,7 +77,7 @@ sess = tf.InteractiveSession()
 sess.run(init)
 
 # Selects gender instead of name
-use_genders = True
+use_genders = False
 trainData, validData, testData, trainTarget, validTarget, testTarget = data_segmentation('data.npy', 'target.npy', use_genders)
 
 Y = tf.constant(trainTarget)
@@ -168,7 +168,9 @@ for i in range(0, (testTarget.shape)[0]):
 	actual = targetData[i]
 	error = tf.add(error,tf.to_float(tf.not_equal(guess, actual)))
 
-print("Number wrong in the test set when k = %d is %f" %(minK, sess.run(error)))
+error = error/(testTarget.shape[0])
+
+print("Number percent error in the test set when k = %d is %f" %(minK, sess.run(error)))
 
 
 ks1 = [10]

@@ -28,8 +28,7 @@ def PickKNearest(distMatrix, k):
 	return responsibilites
 
 def MSE(Ytest, Ynew):
-	numEntries = tf.shape(validY)[0]
-	return tf.reduce_mean(tf.reduce_sum((Ynew - Ytest)**2,1))
+	return tf.reduce_mean(tf.reduce_sum(((Ynew - Ytest)**2)/2,1))
 
 def predict(R, Y):
 	return(tf.matmul(R, tf.cast(Y, tf.float32)))
@@ -81,6 +80,7 @@ for k in ks:
 
 	# Compute the R matrices, predictions, and MSEs for each training set
 	validR = PickKNearest(PairwiseEuclidian(validX, trainX), k)
+	#print(sess.run(validR))
 	validPredict = predict(validR, trainY)
 	validMSE = MSE(tf.cast(validY, tf.float32), validPredict)
 
