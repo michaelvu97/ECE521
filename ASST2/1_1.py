@@ -45,6 +45,7 @@ for rate in learningRates:
     b = tf.Variable(tf.zeros([1], dtype = tf.float64), name = "bias")
 
     # Reshape the input so that each picture is a vector rather than a matrix
+    # Mention in the report that we used this numpy operation to speed things up
     trainData = np.reshape(trainData, [3500, -1])
 
     # Create a prediction function
