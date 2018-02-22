@@ -1,4 +1,5 @@
 import tensorflow as tf
+import matplotlib.pyplot as plt
 import numpy as np
 
 sess = tf.Session()
@@ -27,7 +28,18 @@ Loss_Weights = (lambda_weight_penalty / tf.constant(2.0, dtype=tf.float64)) * tf
 
 Loss = Loss_Data + Loss_Weights
 
+learning_rate = 0.0001
+
+optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(Loss)
+
 init = tf.global_variables_initializer()
 sess.run(init)
 
-print(sess.run(Loss, feed_dict={X:np.array([[1,2],[3,4]]), Y:np.array([1,0])}))
+epochLoss = []
+
+for iteration in range(20000):
+    sess.run(optimizer, feed_dict={X:np.array([[1,2],[3,4]]), Y:np.array([1,0])})
+    epochLoss.append(sess.run(Loss, feed_dict={X:np.array([[1,2],[3,4]]), Y:np.array([1,0])}))
+
+plt.plot(np.arange(20000), epochLoss)
+plt.show()
