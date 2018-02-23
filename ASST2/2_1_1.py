@@ -125,8 +125,7 @@ for learning_rate in learningRates:
         best_test_accuracy = test_accuracy
 
 
-print("Best Test Accuracy = " + str(best_test_accuracy) + ", training rate = "\
-        + str(best_learning_rate))
+print("Best Test Accuracy = " + str(best_test_accuracy))
 plt.figure(1)
 
 
@@ -136,7 +135,7 @@ plt.plot(best_learning_epoch_training_loss, label=("Training loss"))
 plt.plot(best_learning_epoch_validation_loss, label=("Validation loss"))
 
 plt.legend()
-plt.title("Best Training and Validation Loss")
+plt.title("Best Training and Validation Loss, Learning Rate = " + str(best_learning_rate))
 
 plt.subplot(212)
 
