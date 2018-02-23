@@ -2,8 +2,6 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import numpy as np
 
-sess = tf.Session()
-
 ################################################################################
 
 # The given code to get the data
@@ -30,28 +28,29 @@ with np.load("notMNIST.npz") as data :
 lambda_weight_penalty = tf.constant(0.01, dtype=tf.float64)
 n_iterations = 5000
 batch_size = 500
-learningRates = [.005, .001, .0001]
+learningRates = [.01, .001, .005]
 epoch_size = 7
 
 ################################################################################
 
-trainData = np.reshape(trainData, [3500, -1 ])
+trainData = np.reshape(trainData, [3500, -1])
+validData = np.reshape(validData, [100, -1])
 
 dimension = trainData.shape[1]
 
 X = tf.placeholder(tf.float64); # [Nxd]
 Y = tf.placeholder(tf.float64); # [N]
 
+best_learning_rate = learningRates[0]
+minimum_loss = np.inf
+best_learning_epoch_training_loss = []
+best_learning_epoch_validation_loss = []
+
 for learning_rate in learningRates:
 
-    one = tf.constant([1], dtype=tf.float64)
+    w = tf.Variable(tf.zeros([dimension,1], dtype=tf.float64), name="weights", dtype=tf.float64)
 
-    w = tf.get_variable("weights", shape=[dimension, 1], dtype=tf.float64, \
-            initializer=tf.zeros_initializer)
-
-    b = tf.get_variable(shape=[1], dtype=tf.float64, name="bias", \
-            initializer=tf.zeros_initializer)
-
+    b = tf.Variable(tf.zeros([1], dtype=tf.float64), dtype=tf.float64, name="bias")
 
     # Xw + b, no sigmoid since that is handled in the cross entropy function
     yhat = tf.add(tf.matmul(X, w), b)
@@ -64,14 +63,21 @@ for learning_rate in learningRates:
 
     optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(Loss)
 
+    sess = tf.InteractiveSession()
     init = tf.global_variables_initializer()
     sess.run(init)
 
-    epochLoss = []
+    epoch_training_loss = []
+    epoch_validation_loss = []
 
     training_set = {
         X: trainData,
         Y: trainTarget
+    }
+
+    validation_set = {
+        X: validData,
+        Y: validTarget
     }
 
     start_point = 0
@@ -82,7 +88,7 @@ for learning_rate in learningRates:
 
         batch = {
             X: trainData[start_point : start_point + batch_size],
-            Y: trainData[start_point : start_point + batch_size]
+            Y: trainTarget[start_point : start_point + batch_size]
         }
 
         sess.run(optimizer, feed_dict=batch)
@@ -91,12 +97,21 @@ for learning_rate in learningRates:
 
         # Check the result of this epoch
         if ((iteration + 1) % epoch_size == 0):
-            epochLoss.append(sess.run(Loss, feed_dict=training_set))
+            epoch_training_loss.append(sess.run(Loss, feed_dict=training_set))
+            epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
 
-    plt.plot(np.arange(len(epochLoss)), epochLoss, \
-            label=("loss with training rate " + str(learning_rate)))
+    if epoch_validation_loss[-1] < minimum_loss:
+        minimum_loss = epoch_validation_loss[-1]
+        best_learning_rate = learning_rate
+        best_learning_epoch_training_loss = epoch_training_loss
+        best_learning_epoch_validation_loss = epoch_validation_loss
 
-    print(epochLoss[-1])
+
+plt.plot(np.arange(len(best_learning_epoch_training_loss)), best_learning_epoch_training_loss, \
+            label=("Training loss achieved with best training rate " + str(best_learning_rate)))
+
+plt.plot(np.arange(len(best_learning_epoch_validation_loss)), best_learning_epoch_validation_loss, \
+            label=("Validation loss achieved with best training rate " + str(best_learning_rate)))
 
 plt.legend()
 plt.show()
