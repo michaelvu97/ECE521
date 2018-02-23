@@ -35,6 +35,7 @@ epoch_size = 7
 
 trainData = np.reshape(trainData, [3500, -1])
 validData = np.reshape(validData, [100, -1])
+testData = np.reshape(testData, [testData.shape[0], -1])
 
 dimension = trainData.shape[1]
 
@@ -45,6 +46,8 @@ best_learning_rate = learningRates[0]
 minimum_loss = np.inf
 best_learning_epoch_training_loss = []
 best_learning_epoch_validation_loss = []
+best_validation_accuracy = []
+best_test_accuracy = 0.0
 
 for learning_rate in learningRates:
 
@@ -63,12 +66,15 @@ for learning_rate in learningRates:
 
     optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(Loss)
 
+    Accuracy = tf.reduce_mean(tf.cast(tf.equal(Y, tf.round(tf.sigmoid(yhat))), tf.float64))
+
     sess = tf.InteractiveSession()
     init = tf.global_variables_initializer()
     sess.run(init)
 
     epoch_training_loss = []
     epoch_validation_loss = []
+    epoch_validation_accuracy = []
 
     training_set = {
         X: trainData,
@@ -78,6 +84,11 @@ for learning_rate in learningRates:
     validation_set = {
         X: validData,
         Y: validTarget
+    }
+
+    test_set = {
+        X: testData,
+        Y: testTarget
     }
 
     start_point = 0
@@ -99,19 +110,42 @@ for learning_rate in learningRates:
         if ((iteration + 1) % epoch_size == 0):
             epoch_training_loss.append(sess.run(Loss, feed_dict=training_set))
             epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
+            epoch_validation_accuracy.append(sess.run(Accuracy, feed_dict=validation_set))
+
+    plt.plot(np.arange(len(epoch_validation_accuracy)), epoch_validation_accuracy) 
+
 
     if epoch_validation_loss[-1] < minimum_loss:
         minimum_loss = epoch_validation_loss[-1]
         best_learning_rate = learning_rate
         best_learning_epoch_training_loss = epoch_training_loss
         best_learning_epoch_validation_loss = epoch_validation_loss
+        best_validation_accuracy = epoch_validation_accuracy
+
+    test_accuracy = sess.run(Accuracy, feed_dict=test_set)
+    if test_accuracy > best_test_accuracy:
+        best_test_accuracy = test_accuracy
 
 
+print("Best Test Accuracy = " + str(best_test_accuracy))
+plt.figure(1)
+
+
+plt.subplot(211)
 plt.plot(np.arange(len(best_learning_epoch_training_loss)), best_learning_epoch_training_loss, \
             label=("Training loss achieved with best training rate " + str(best_learning_rate)))
 
 plt.plot(np.arange(len(best_learning_epoch_validation_loss)), best_learning_epoch_validation_loss, \
             label=("Validation loss achieved with best training rate " + str(best_learning_rate)))
 
+plt.legend()
+plt.title("Best Training and Validation Loss")
+
+plt.subplot(212)
+
+plt.plot(np.arange(len(best_validation_accuracy)), best_validation_accuracy, \
+        label="Validation Accuracy")
+    
+plt.title("Best Validation Accuracy")
 plt.legend()
 plt.show()
