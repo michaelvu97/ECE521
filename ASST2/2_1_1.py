@@ -28,7 +28,7 @@ with np.load("notMNIST.npz") as data :
 lambda_weight_penalty = tf.constant(0.01, dtype=tf.float64)
 n_iterations = 5000
 batch_size = 500
-learningRates = [.01, .001, .005]
+learningRates = [.005, .001, .0001]
 epoch_size = 7
 
 ################################################################################
