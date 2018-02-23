@@ -93,6 +93,7 @@ for learning_rate in learningRates:
 
     start_point = 0
 
+
     for iteration in range(n_iterations):
 
         # Once step of optimization
@@ -112,9 +113,6 @@ for learning_rate in learningRates:
             epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
             epoch_validation_accuracy.append(sess.run(Accuracy, feed_dict=validation_set))
 
-    plt.plot(np.arange(len(epoch_validation_accuracy)), epoch_validation_accuracy) 
-
-
     if epoch_validation_loss[-1] < minimum_loss:
         minimum_loss = epoch_validation_loss[-1]
         best_learning_rate = learning_rate
@@ -127,24 +125,22 @@ for learning_rate in learningRates:
         best_test_accuracy = test_accuracy
 
 
-print("Best Test Accuracy = " + str(best_test_accuracy))
+print("Best Test Accuracy = " + str(best_test_accuracy) + ", training rate = "\
+        + str(best_learning_rate))
 plt.figure(1)
 
 
 plt.subplot(211)
-plt.plot(np.arange(len(best_learning_epoch_training_loss)), best_learning_epoch_training_loss, \
-            label=("Training loss achieved with best training rate " + str(best_learning_rate)))
+plt.plot(best_learning_epoch_training_loss, label=("Training loss"))
 
-plt.plot(np.arange(len(best_learning_epoch_validation_loss)), best_learning_epoch_validation_loss, \
-            label=("Validation loss achieved with best training rate " + str(best_learning_rate)))
+plt.plot(best_learning_epoch_validation_loss, label=("Validation loss"))
 
 plt.legend()
 plt.title("Best Training and Validation Loss")
 
 plt.subplot(212)
 
-plt.plot(np.arange(len(best_validation_accuracy)), best_validation_accuracy, \
-        label="Validation Accuracy")
+plt.plot(best_validation_accuracy, label="Validation Accuracy")
     
 plt.title("Best Validation Accuracy")
 plt.legend()
