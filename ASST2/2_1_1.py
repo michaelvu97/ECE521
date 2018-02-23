@@ -113,8 +113,8 @@ for learning_rate in learningRates:
             epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
             epoch_validation_accuracy.append(sess.run(Accuracy, feed_dict=validation_set))
 
-    if epoch_validation_loss[-1] < minimum_loss:
-        minimum_loss = epoch_validation_loss[-1]
+    if epoch_training_loss[-1] < minimum_loss:
+        minimum_loss = epoch_training_loss[-1]
         best_learning_rate = learning_rate
         best_learning_epoch_training_loss = epoch_training_loss
         best_learning_epoch_validation_loss = epoch_validation_loss
