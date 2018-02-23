@@ -96,5 +96,7 @@ for learning_rate in learningRates:
     plt.plot(np.arange(len(epochLoss)), epochLoss, \
             label=("loss with training rate " + str(learning_rate)))
 
+    print(epochLoss[-1])
+
 plt.legend()
 plt.show()
