@@ -120,12 +120,14 @@ LinearAccuracy = tf.reduce_mean(tf.cast(tf.equal(Y, tf.round(yhat)), tf.float64)
 linear_training_losses = []
 linear_training_accuracy = []
 
+
+init = tf.global_variables_initializer()
+sess.run(init)
+
 start_point = 0
 linear_training_losses.append(sess.run(MSE, feed_dict=training_set))
 linear_training_accuracy.append(sess.run(LinearAccuracy, feed_dict=training_set))
 
-init = tf.global_variables_initializer()
-sess.run(init)
 
 for iteration in range(n_iterations):
 
