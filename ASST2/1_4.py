@@ -1,6 +1,6 @@
 import tensorflow as tf
-import matplotlib.pyplot as plt
 import numpy as np
+import time
 
 # The given code to get the data
 
@@ -22,6 +22,9 @@ with np.load("notMNIST.npz") as data :
     testData, testTarget = Data[3600:], Target[3600:]
 
 
+
+
+
 # Given parameters
 # One iteration is to run through an entire mini batch (size 500 here)
 # Note that one epoch is one runthrough of the entire training data set
@@ -31,30 +34,41 @@ with np.load("notMNIST.npz") as data :
 trainDataSize = 3500
 batchSize = 500
 numIterations = 20000
-learningRates = [.005, .001, .0001]
+hyperParameters = [0.001]
+
+# This was the best learning rate chosen from 1.1
+learningRate = .005
 
 # Input and output data
 X = tf.placeholder(tf.float64)
 Y = tf.placeholder(tf.float64)
+dataSize = tf.placeholder(tf.float64)
 
 
-for rate in learningRates:
+for hyperParameter in hyperParameters:
+
 
     # Reshape the input so that each picture is a vector rather than a matrix
     # Mention in the report that we used this numpy operation to speed things up
     trainData = np.reshape(trainData, [3500, -1])
-
+    validData = np.reshape(validData, [100, -1])
+    testData = np.reshape(testData, [145, -1])
     # Weights
     w = tf.expand_dims(tf.Variable(tf.zeros([784], dtype=tf.float64), name="weights"), 1)
-    # w = tf.Variable(tf.truncated_normal(shape = [trainData.shape[1], 1], stddev = 0.1, dtype = tf.float64))
+    #w = tf.Variable(tf.truncated_normal(shape = [trainData.shape[1], 1], stddev = 0.1, dtype = tf.float64))
     b = tf.Variable(tf.zeros([1], dtype = tf.float64), name = "bias")
-    # b = tf.Variable(tf.truncated_normal(shape = [1], stddev = 0.1, dtype = tf.float64))
+    #b = tf.Variable(tf.truncated_normal(shape = [1], stddev = 0.1, dtype = tf.float64))
+
+    
 
     # Create a prediction function
     yhat = tf.add(tf.matmul(X, w), b)
 
     # The function to minimize
-    MSE = tf.reduce_mean(((yhat - Y)**2)/2)
+    MSE = tf.reduce_mean(((yhat - Y)**2)/2) + tf.reduce_sum(w**2)*(hyperParameter/2)
+
+    # The classification error function
+    classError = tf.reduce_mean(tf.abs(tf.round(yhat) - Y))
 
     # I needed to re create the variables. The easiest way to do this seemed to be to
     # start a new session for each time I recreated the variables
@@ -69,12 +83,9 @@ for rate in learningRates:
     startPoint = 0
 
     # Create the optimizer. Every time a session is run, 
-    optimizer = tf.train.GradientDescentOptimizer(rate).minimize(MSE)
+    optimizer = tf.train.GradientDescentOptimizer(learningRate).minimize(MSE)
 
-    # The losses at each epoch and the epoch itself
-    epochLoss = []
-    epoch = np.arange(2857)
-
+    startTime = time.time()
     for iteration in range(numIterations):
 
         # Run the optimizer
@@ -82,19 +93,21 @@ for rate in learningRates:
         
         # Update the start of the batch as needed
         startPoint = (startPoint + batchSize) % trainDataSize
-    
-        # If an epoch has completed, then update the epoch loss
-        if((iteration + 1)%7 == 0):
-            tempMSE = sess.run(MSE, feed_dict={X: trainData, Y: trainTarget})
-            #print("MSE: ", tempMSE)
-            epochLoss.append(tempMSE)
-    
-    # After optimizing, plot the epoch and the loss
-    epochLoss = np.array(epochLoss)
-    label = "loss with training rate " + str(rate)
-    plt.plot(epoch, epochLoss, label=label)
-    print(sess.run(MSE, feed_dict={X: trainData, Y: trainTarget}))
 
-# Create the plot
-plt.legend()
-plt.show()
+    trainMSE = sess.run(MSE, feed_dict={X: trainData, Y: trainTarget})
+    trainTime = time.time() - startTime
+    print("Training loss with SGD MSE: ", trainMSE)
+    print("Time taken: ", trainTime)
+
+startTime = time.time()
+trainData = tf.concat([tf.add(tf.zeros([3500, 1]), 1), trainData], 1)
+trans = tf.matrix_inverse(tf.matmul(tf.transpose(trainData), trainData))
+xy = tf.matmul(tf.transpose(trainData), trainTarget.astype(np.float32))
+wls = tf.matmul(trans, xy)
+
+MSE_opt = tf.reduce_mean((tf.matmul(trainData, wls) - trainTarget.astype(np.float32))**2)/2
+trainTime = time.time() - startTime
+print("Training loss with least square weights: ", sess.run(MSE_opt))
+print("Time taken: ", trainTime)
+
+

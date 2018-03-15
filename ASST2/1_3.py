@@ -44,24 +44,28 @@ dataSize = tf.placeholder(tf.float64)
 
 for hyperParameter in hyperParameters:
 
-    # Weights
-    w = tf.expand_dims(tf.Variable(tf.zeros([784], dtype=tf.float64), name="weights"), 1)
-    b = tf.Variable(tf.zeros([1], dtype = tf.float64), name = "bias")
 
     # Reshape the input so that each picture is a vector rather than a matrix
     # Mention in the report that we used this numpy operation to speed things up
     trainData = np.reshape(trainData, [3500, -1])
     validData = np.reshape(validData, [100, -1])
     testData = np.reshape(testData, [145, -1])
+    # Weights
+    w = tf.expand_dims(tf.Variable(tf.zeros([784], dtype=tf.float64), name="weights"), 1)
+    #w = tf.Variable(tf.truncated_normal(shape = [trainData.shape[1], 1], stddev = 0.1, dtype = tf.float64))
+    b = tf.Variable(tf.zeros([1], dtype = tf.float64), name = "bias")
+    #b = tf.Variable(tf.truncated_normal(shape = [1], stddev = 0.1, dtype = tf.float64))
+
+    
 
     # Create a prediction function
     yhat = tf.add(tf.matmul(X, w), b)
 
     # The function to minimize
-    MSE = tf.reduce_sum(((yhat - Y)**2)/(2*trainDataSize)) + tf.reduce_sum((w**2))*(hyperParameter/2)
+    MSE = tf.reduce_mean(((yhat - Y)**2)/2) + tf.reduce_sum(w**2)*(hyperParameter/2)
 
     # The classification error function
-    classError = tf.reduce_sum(tf.abs(tf.round(yhat - Y)))/(dataSize)
+    classError = tf.reduce_mean(tf.abs(tf.round(yhat) - Y))
 
     # I needed to re create the variables. The easiest way to do this seemed to be to
     # start a new session for each time I recreated the variables
@@ -88,8 +92,11 @@ for hyperParameter in hyperParameters:
 
 
     # Calculate the MSE after each batch and print it
-    validClassErr = sess.run(classError, feed_dict={X: validData, Y: validTarget, dataSize: validTarget.shape[0]})
-    testClassErr = sess.run(classError, feed_dict={X: testData, Y: testTarget, dataSize: testTarget.shape[0]})
+    validClassErr = sess.run(classError, feed_dict={X: validData, Y: validTarget})
+    testClassErr = sess.run(classError, feed_dict={X: testData, Y: testTarget})
+
+    validLoss = sess.run(MSE, feed_dict={X: trainData, Y: trainTarget})
+    print(validLoss)
 
     print("Parameter:", hyperParameter)
     print("Set: Validation", " Classification Error:", validClassErr)

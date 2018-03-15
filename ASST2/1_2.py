@@ -54,7 +54,7 @@ for batchSize in batchSizes:
     yhat = tf.add(tf.matmul(X, w), b)
 
     # The function to minimize
-    MSE = tf.reduce_sum(((yhat - Y)**2)/(2*trainDataSize))
+    MSE = tf.reduce_mean(((yhat - Y)**2)/2)
 
     # I needed to re create the variables. The easiest way to do this seemed to be to
     # start a new session for each time I recreated the variables
