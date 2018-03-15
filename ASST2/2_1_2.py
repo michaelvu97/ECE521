@@ -58,10 +58,6 @@ test_set = {
 }
 
 ################################################################################
-"""
-ADAM OPTIMIZER
-"""
-################################################################################
 
 w = tf.Variable(tf.zeros([dimension,1], dtype=tf.float64), name="weights", dtype=tf.float64)
 
@@ -75,8 +71,6 @@ Loss_Data = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(labels=Y, log
 Loss_Weights = (lambda_weight_penalty / tf.constant(2.0, dtype=tf.float64)) * tf.reduce_sum(w**2)
 
 Loss = Loss_Data + Loss_Weights
-
-
 
 Accuracy = tf.reduce_mean(tf.cast(tf.equal(Y, tf.round(tf.sigmoid(yhat))), tf.float64))
 
@@ -93,6 +87,7 @@ optimizer_index = 0
 
 for optimizer in optimizers:
 
+    # Wipe the previous optimized weights and bias
     sess = tf.InteractiveSession()
     init = tf.global_variables_initializer()
     sess.run(init)
@@ -122,8 +117,8 @@ for optimizer in optimizers:
 plt.figure(1)
 
 for i in range(len(optimizers)):
-    plt.plot(epoch_training_losses[i], label=("Training loss: " + str(optimizer_names[i])))
+    plt.plot(epoch_training_losses[i], label=(str(optimizer_names[i]) + " Training Loss"))
 
 plt.legend()
-plt.title("Best Training Loss, Learning Rate = " + str(learning_rate))
+plt.title("Training Loss, SGD vs ADAM, Learning Rate = " + str(learning_rate))
 plt.show()

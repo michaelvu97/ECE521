@@ -93,6 +93,11 @@ for learning_rate in learningRates:
 
     start_point = 0
 
+    # Pre training check: weights are zero
+    epoch_training_loss.append(sess.run(Loss, feed_dict=training_set))
+    epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
+    epoch_validation_accuracy.append(sess.run(Accuracy, feed_dict=validation_set))
+
 
     for iteration in range(n_iterations):
 
