@@ -34,7 +34,7 @@ with np.load("notMNIST.npz") as data :
 trainDataSize = 3500
 batchSize = 500
 numIterations = 20000
-hyperParameters = [0.001]
+hyperParameters = [0]
 
 # This was the best learning rate chosen from 1.1
 learningRate = .005
@@ -54,10 +54,10 @@ for hyperParameter in hyperParameters:
     validData = np.reshape(validData, [100, -1])
     testData = np.reshape(testData, [145, -1])
     # Weights
-    w = tf.expand_dims(tf.Variable(tf.zeros([784], dtype=tf.float64), name="weights"), 1)
-    #w = tf.Variable(tf.truncated_normal(shape = [trainData.shape[1], 1], stddev = 0.1, dtype = tf.float64))
-    b = tf.Variable(tf.zeros([1], dtype = tf.float64), name = "bias")
-    #b = tf.Variable(tf.truncated_normal(shape = [1], stddev = 0.1, dtype = tf.float64))
+    #w = tf.expand_dims(tf.Variable(tf.zeros([784], dtype=tf.float64), name="weights"), 1)
+    w = tf.Variable(tf.truncated_normal(shape = [784, 1], stddev = 0.1, dtype = tf.float64))
+    #b = tf.Variable(tf.zeros([1], dtype = tf.float64), name = "bias")
+    b = tf.Variable(0.0, dtype = tf.float64)
 
     
 
@@ -95,11 +95,15 @@ for hyperParameter in hyperParameters:
         startPoint = (startPoint + batchSize) % trainDataSize
 
     trainMSE = sess.run(MSE, feed_dict={X: trainData, Y: trainTarget})
+    trainAccuracy = sess.run(classError, feed_dict={X: trainData, Y: trainTarget})
     trainTime = time.time() - startTime
     print("Training loss with SGD MSE: ", trainMSE)
-    print("Time taken: ", trainTime)
+    print("Training classification error with SGD: ", trainAccuracy)
 
-startTime = time.time()
+    print("Time taken: ", trainTime)
+    print()
+
+
 trainData = trainData.astype(np.float64)
 trainData = tf.concat([tf.add(tf.zeros([3500, 1], dtype=tf.float64), 1), trainData], 1)
 trans = tf.matrix_inverse(tf.matmul(tf.transpose(trainData), trainData))
@@ -107,8 +111,12 @@ xy = tf.matmul(tf.transpose(trainData), trainTarget.astype(np.float64))
 wls = tf.matmul(trans, xy)
 
 MSE_opt = tf.reduce_mean((tf.matmul(trainData, wls) - trainTarget.astype(np.float64))**2)/2
+classErr_opt = tf.reduce_mean(tf.abs(tf.round(tf.matmul(trainData, wls)) - trainTarget.astype(np.float64)))
+startTime = time.time()
+sess.run(MSE_opt)
 trainTime = time.time() - startTime
 print("Training loss with least square weights: ", sess.run(MSE_opt))
+print("Training classification error with least square weights: ", sess.run(classErr_opt))
 print("Time taken: ", trainTime)
 
 

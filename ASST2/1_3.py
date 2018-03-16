@@ -51,10 +51,10 @@ for hyperParameter in hyperParameters:
     validData = np.reshape(validData, [100, -1])
     testData = np.reshape(testData, [145, -1])
     # Weights
-    w = tf.expand_dims(tf.Variable(tf.zeros([784], dtype=tf.float64), name="weights"), 1)
-    #w = tf.Variable(tf.truncated_normal(shape = [trainData.shape[1], 1], stddev = 0.1, dtype = tf.float64))
-    b = tf.Variable(tf.zeros([1], dtype = tf.float64), name = "bias")
-    #b = tf.Variable(tf.truncated_normal(shape = [1], stddev = 0.1, dtype = tf.float64))
+    #w = tf.expand_dims(tf.Variable(tf.zeros([784], dtype=tf.float64), name="weights"), 1)
+    w = tf.Variable(tf.truncated_normal(shape = [784, 1], stddev = 0.1, dtype = tf.float64))
+    #b = tf.Variable(tf.zeros([1], dtype = tf.float64), name = "bias")
+    b = tf.Variable(0.0, dtype = tf.float64)
 
     
 

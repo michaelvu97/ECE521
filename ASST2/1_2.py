@@ -43,8 +43,10 @@ Y = tf.placeholder(tf.float64)
 for batchSize in batchSizes:
 
     # Weights
-    w = tf.expand_dims(tf.Variable(tf.zeros([784], dtype=tf.float64), name="weights"), 1)
-    b = tf.Variable(tf.zeros([1], dtype = tf.float64), name = "bias")
+    #w = tf.expand_dims(tf.Variable(tf.zeros([784], dtype=tf.float64), name="weights"), 1)
+    w = tf.Variable(tf.truncated_normal(shape = [784, 1], stddev = 0.1, dtype = tf.float64))
+    #b = tf.Variable(tf.zeros([1], dtype = tf.float64), name = "bias")
+    b = tf.Variable(0.0, dtype = tf.float64)
 
     # Reshape the input so that each picture is a vector rather than a matrix
     # Mention in the report that we used this numpy operation to speed things up
