@@ -36,7 +36,7 @@ trainData, validData, testData, trainTarget, validTarget, testTarget = \
 		data_segmentation('data.npy', 'target.npy', 0)
 
 #Reshaping data into a tensor		
-trainData = np.reshape(trainData, (trainData.shape[0], 1024))
+trainData = np.reshape(trainData, (trainData.shape[0], 1024)) 
 validData = np.reshape(validData, (validData.shape[0], 1024))
 testData = np.reshape(testData, (testData.shape[0], 1024))
 
@@ -46,19 +46,19 @@ validTarget = one_hot_encoding(validTarget)
 testTarget = one_hot_encoding(testTarget)
 
 #Values we will be using for training model -
-valLambda = 0
+valLambda = 0.001
 numIterations = 10000
 batchSize = 300
 learningRate = 0.005
 numBatches = int(trainData.shape[0]/batchSize) 
-epochSize = 4
+epochSize = 3 #900 Images in total
 
 #Graph Input Variables
-X = tf.placeholder(tf.float32, [None, 1024])
-Y = tf.placeholder(tf.float32, [None, 6])
+X = tf.placeholder(tf.float32, [None, 1024]) #32 * 32 = 1024
+Y = tf.placeholder(tf.float32, [None, 6]) #6 classes
 
 #Set model weights
-W = tf.Variable(tf.truncated_normal(shape = [1024,6], dtype = tf.float32, stddev = 0.1))
+W = tf.Variable(tf.truncated_normal(shape = [1024,6], dtype = tf.float32, stddev = 0.5))
 b = tf.Variable(tf.zeros([6]))
 
 #Construct Model
@@ -113,7 +113,7 @@ for i in range(numIterations):
 	testAccuracy = accuracy.eval(feed_dict = {X: testData, Y: testTarget})
 	if(testAccuracy > bestTestAccuracy):
 		bestTestAccuracy = testAccuracy
-		print("Test Accuracy: " + str(testAccuracy))
+
 		
 		
 val = 0
@@ -134,13 +134,18 @@ plt.plot(epochTrainLoss, label = ("Training Loss"))
 plt.plot(epochValidLoss, label = ("Valid Loss"))
 
 plt.legend()
-plt.title("Best Training and Validation Loss, Learning Rate = " + str(learningRate))
+plt.title("Training & Validation Loss, Learning Rate = " + str(learningRate) + ", Lambda = " + str(valLambda))
+plt.xlabel("Number of Epochs")
+plt.ylabel("Cross-Entropy Loss")
 
 plt.subplot(212)
 plt.plot(epochTrainAccuracy, label = ("Training Accuracy"))
 plt.plot(epochValidAccuracy, label = ("Valid Accuracy"))
 
 plt.legend()
-plt.title("Best Accuracy and Validation Accuracy, Learning Rate = " + str(learningRate))
+plt.title("Training & Validation Accuracy, Learning Rate = " + str(learningRate) + ", Lambda = " + str(valLambda))
+plt.xlabel("Number of Epochs")
+plt.ylabel("Classification Accuracy")
+
 plt.show()
 
