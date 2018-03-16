@@ -91,10 +91,11 @@ for rate in learningRates:
     
     # After optimizing, plot the epoch and the loss
     epochLoss = np.array(epochLoss)
-    label = "loss with training rate " + str(rate)
+    label = "MSE with learning rate " + str(rate)
     plt.plot(epoch, epochLoss, label=label)
     print(sess.run(MSE, feed_dict={X: trainData, Y: trainTarget}))
 
 # Create the plot
 plt.legend()
+plt.title("MSE Value at Each Epoch for Various Learning Rates")
 plt.show()

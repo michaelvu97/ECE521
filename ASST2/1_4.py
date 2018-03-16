@@ -100,12 +100,13 @@ for hyperParameter in hyperParameters:
     print("Time taken: ", trainTime)
 
 startTime = time.time()
-trainData = tf.concat([tf.add(tf.zeros([3500, 1]), 1), trainData], 1)
+trainData = trainData.astype(np.float64)
+trainData = tf.concat([tf.add(tf.zeros([3500, 1], dtype=tf.float64), 1), trainData], 1)
 trans = tf.matrix_inverse(tf.matmul(tf.transpose(trainData), trainData))
-xy = tf.matmul(tf.transpose(trainData), trainTarget.astype(np.float32))
+xy = tf.matmul(tf.transpose(trainData), trainTarget.astype(np.float64))
 wls = tf.matmul(trans, xy)
 
-MSE_opt = tf.reduce_mean((tf.matmul(trainData, wls) - trainTarget.astype(np.float32))**2)/2
+MSE_opt = tf.reduce_mean((tf.matmul(trainData, wls) - trainTarget.astype(np.float64))**2)/2
 trainTime = time.time() - startTime
 print("Training loss with least square weights: ", sess.run(MSE_opt))
 print("Time taken: ", trainTime)

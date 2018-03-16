@@ -96,8 +96,6 @@ for hyperParameter in hyperParameters:
     testClassErr = sess.run(classError, feed_dict={X: testData, Y: testTarget})
 
     validLoss = sess.run(MSE, feed_dict={X: trainData, Y: trainTarget})
-    print(validLoss)
-
     print("Parameter:", hyperParameter)
     print("Set: Validation", " Classification Error:", validClassErr)
     print("Set: Test", " Classification Error:", testClassErr)
