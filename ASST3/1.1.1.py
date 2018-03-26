@@ -46,7 +46,7 @@ def WeightedSumLayer(inputTensor, numHiddenUnits):
     """
     X = tf.placeholder(tf.float64)
 
-    W = tf.get_variable("W", shape=[inputTensor.shape[0], numHiddenUnits],
+    W = tf.get_variable("W", shape=[inputTensor.shape[1], numHiddenUnits],
             dtype=tf.float64, 
             initializer=tf.contrib.layers.xavier_initializer())
 
@@ -55,15 +55,12 @@ def WeightedSumLayer(inputTensor, numHiddenUnits):
 
     sess.run(init)
 
-    Sum = tf.matmul(W, X, transpose_a=True)
+    Sum = tf.matmul(X, W)
 
-    # Convert input tensor to a nx1 tensor
-    print(inputTensor.shape[0], " ", numHiddenUnits)
-    
-    inputTensor = np.expand_dims(inputTensor, axis=1)
-    
+    # Result shape: N x numHiddenUnits
     return sess.run(Sum, feed_dict={X: inputTensor})
 
-result = WeightedSumLayer(trainData[0], 5)
+result = WeightedSumLayer(trainData, 5)
 
 print(result)
+print(result.shape)
