@@ -74,6 +74,7 @@ for learning_rate in learningRates:
 
     epoch_training_loss = []
     epoch_validation_loss = []
+    epoch_training_accuracy = []
     epoch_validation_accuracy = []
 
     training_set = {
@@ -96,6 +97,7 @@ for learning_rate in learningRates:
     # Pre training check: weights are zero
     epoch_training_loss.append(sess.run(Loss, feed_dict=training_set))
     epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
+    epoch_training_accuracy.append(sess.run(Loss, feed_dict=training_set))
     epoch_validation_accuracy.append(sess.run(Accuracy, feed_dict=validation_set))
 
 
@@ -116,14 +118,16 @@ for learning_rate in learningRates:
         if ((iteration + 1) % epoch_size == 0):
             epoch_training_loss.append(sess.run(Loss, feed_dict=training_set))
             epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
+            epoch_training_accuracy.append(sess.run(Accuracy, feed_dict=training_set))
             epoch_validation_accuracy.append(sess.run(Accuracy, feed_dict=validation_set))
 
-    if epoch_training_loss[-1] < minimum_loss:
-        minimum_loss = epoch_training_loss[-1]
+    if epoch_validation_loss[-1] < minimum_loss:
+        minimum_loss = epoch_validation_loss[-1]
         best_learning_rate = learning_rate
         best_learning_epoch_training_loss = epoch_training_loss
         best_learning_epoch_validation_loss = epoch_validation_loss
         best_validation_accuracy = epoch_validation_accuracy
+        best_trainnig_accuracy = epoch_training_accuracy
 
     test_accuracy = sess.run(Accuracy, feed_dict=test_set)
     if test_accuracy > best_test_accuracy:
@@ -145,7 +149,8 @@ plt.title("Best Training and Validation Loss, Learning Rate = " + str(best_learn
 plt.subplot(212)
 
 plt.plot(best_validation_accuracy, label="Validation Accuracy")
+plt.plot(best_trainnig_accuracy, label="Training Accuracy")
     
-plt.title("Best Validation Accuracy")
+plt.title("Best Accuracy")
 plt.legend()
 plt.show()
