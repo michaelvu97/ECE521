@@ -34,18 +34,19 @@ trainData = np.reshape(trainData, [trainData.shape[0], -1])
 validData = np.reshape(validData, [validData.shape[0], -1])
 testData = np.reshape(testData, [testData.shape[0], -1])
 
-# W = [
-#     tf.Variable(tf.zeros([dimension,1], dtype=tf.float64), name="weights", dtype=tf.float64),
-#     tf.Variable(tf.zeros([dimension,1], dtype=tf.float64), name="weights", dtype=tf.float64)
-# ]
-
 def WeightedSumLayer(inputTensor, numHiddenUnits): 
     """
     Takes activations from a previous layer and returns the weighted sum of the
     inputs for the current hidden layer (described by numHiddenUnits).
     """
+
+    """
+    TODO DO BIAS
+    """
+
     X = tf.placeholder(tf.float64)
 
+    # input shape[1] is the dimension of the input images
     W = tf.get_variable("W", shape=[inputTensor.shape[1], numHiddenUnits],
             dtype=tf.float64, 
             initializer=tf.contrib.layers.xavier_initializer())
