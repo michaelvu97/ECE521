@@ -64,6 +64,8 @@ inputDimension = trainData.shape[1]
 # Through testing, a learning rate of 0.001 yielded the fastest convergence
 bestLearningRate = 0.001
 
+lambda_weight_penalty = tf.constant(0.0003, dtype=tf.float64)
+
 """
 Theses will change once we use the full dataset
 """
@@ -106,9 +108,14 @@ S2 = tf.matmul(X1, W2) + Bias2
 # Now determine the output classification
 y_hat = S2
 
+WeightDecay = 0.5 * lambda_weight_penalty * (
+        tf.reduce_sum(W1 ** 2) + 
+        tf.reduce_sum(W2 ** 2)
+)
+
 Loss = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(logits = y_hat, labels = Y)
-)
+) + WeightDecay
 
 ClassificationError = tf.reduce_mean(tf.cast(
         tf.not_equal(tf.argmax(y_hat, 1), tf.argmax(Y, 1)), tf.float32)
@@ -184,5 +191,6 @@ plt.show()
 plt.plot(epoch_training_error, label="Training")
 plt.plot(epoch_validation_error, label="Validation")
 plt.plot(epoch_testing_error, label="Testing")
+plt.legend()
 plt.title("Classification Error, Learning Rate = " + str(bestLearningRate))
 plt.show()
