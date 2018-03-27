@@ -68,7 +68,7 @@ bestLearningRate = 0.001
 Theses will change once we use the full dataset
 """
 epochSize = 5
-n_iterations = 5000
+n_iterations = 500
 batch_size = 3000
 
 if testing:
@@ -110,12 +110,27 @@ Loss = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(logits = y_hat, labels = Y)
 )
 
+ClassificationError = tf.reduce_mean(tf.cast(
+        tf.not_equal(tf.argmax(y_hat, 1), tf.argmax(Y, 1)), tf.float32)
+)
+
 Optimizer = tf.train.AdamOptimizer(learning_rate = bestLearningRate).minimize(Loss);
 
 training_set = {
     X0: trainData,
     Y: trainTarget
 }
+
+validation_set = {
+    X0: validData,
+    Y: validTarget
+}
+
+testing_set = {
+    X0: testData,
+    Y: testTarget
+}
+
 
 start_point = 0
 
@@ -124,7 +139,19 @@ init = tf.global_variables_initializer()
 sess.run(init)
 
 epoch_training_loss = []
+epoch_validation_loss = []
+epoch_testing_loss = []
+epoch_training_error = []
+epoch_validation_error = []
+epoch_testing_error = []
+
 epoch_training_loss.append(sess.run(Loss, feed_dict=training_set))
+epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
+epoch_testing_loss.append(sess.run(Loss, feed_dict=testing_set))
+
+epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set))
+epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
+epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
 
 for i in range(n_iterations):
 
@@ -139,7 +166,23 @@ for i in range(n_iterations):
 
     if (i + 1) % epochSize == 0:
         epoch_training_loss.append(sess.run(Loss, feed_dict=training_set))
+        epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
+        epoch_testing_loss.append(sess.run(Loss, feed_dict=testing_set))
+
+        epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set))
+        epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
+        epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
         print("{0}%".format(i * 100.0 / (1.0 *n_iterations)))
 
-plt.plot(epoch_training_loss)
+plt.plot(epoch_training_loss, label="Training")
+plt.plot(epoch_validation_loss, label="Validation")
+plt.plot(epoch_testing_loss, label="Testing")
+plt.legend()
+plt.title("Cross Entropy Loss, Learning Rate = " + str(bestLearningRate))
+plt.show()
+
+plt.plot(epoch_training_error, label="Training")
+plt.plot(epoch_validation_error, label="Validation")
+plt.plot(epoch_testing_error, label="Testing")
+plt.title("Classification Error, Learning Rate = " + str(bestLearningRate))
 plt.show()
