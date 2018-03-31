@@ -34,34 +34,52 @@ trainData = np.reshape(trainData, [trainData.shape[0], -1])
 validData = np.reshape(validData, [validData.shape[0], -1])
 testData = np.reshape(testData, [testData.shape[0], -1])
 
+layer_variable_suffix = 1
+
+inputImageDimension = trainData[0].shape[0]
+print(inputImageDimension)
+
 def WeightedSumLayer(inputTensor, numHiddenUnits): 
     """
     Takes activations from a previous layer and returns the weighted sum of the
     inputs for the current hidden layer (described by numHiddenUnits).
     """
 
-    X = tf.placeholder(tf.float64)
+    global layer_variable_suffix
+    global inputImageDimension
 
-    # input shape[1] is the dimension of the input images
-    W = tf.get_variable("W", shape=[inputTensor.shape[1], numHiddenUnits],
+    W = tf.get_variable("W_{0}".format(layer_variable_suffix), 
+            shape=[inputTensor.shape[1], numHiddenUnits],
             dtype=tf.float64, 
             initializer=tf.contrib.layers.xavier_initializer())
 
-    b = tf.get_variable("b", shape=[1, numHiddenUnits],
+    b = tf.get_variable("b_{0}".format(layer_variable_suffix), 
+            shape=[1, numHiddenUnits],
             dtype=tf.float64,
             initializer=tf.zeros_initializer())
 
-    sess = tf.Session()
-    init = tf.global_variables_initializer()
+    layer_variable_suffix = layer_variable_suffix + 1
 
-    sess.run(init)
+    Y = tf.matmul(inputTensor, W) + b
 
-    Sum = tf.matmul(X, W) + b
+    return Y, W, b
 
-    # Result shape: N x numHiddenUnits
-    return sess.run(Sum, feed_dict={X: inputTensor})
 
-result = WeightedSumLayer(trainData, 5)
+X = tf.placeholder(tf.float64, [None, inputImageDimension])
+
+result, W1, b1 = WeightedSumLayer(X, 5)
+
+res2, W2, b2 = WeightedSumLayer(result, 5)
+
+sess = tf.Session()
+init = tf.global_variables_initializer()
+
+sess.run(init)
 
 print(result)
 print(result.shape)
+
+j = sess.run(res2, feed_dict={X: trainData})
+
+print(j)
+print(j.shape)
