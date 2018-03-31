@@ -18,7 +18,7 @@ with np.load("notMNIST.npz") as data:
 Minified test/train/valid datasets for quicker testing of neural network models
 DISABLE THIS ONCE READY TO TRAIN THE NN ON THE FULL DATASET
 """
-testing = False
+testing = True
 
 if testing:
     # Clip all of the datasets
@@ -35,27 +35,33 @@ trainData = np.reshape(trainData, [trainData.shape[0], -1])
 validData = np.reshape(validData, [validData.shape[0], -1])
 testData = np.reshape(testData, [testData.shape[0], -1])
 
-# def WeightedSumLayer(inputTensor, numHiddenUnits): 
-#     """
-#     Takes activations from a previous layer and returns the weighted sum of the
-#     inputs for the current hidden layer (described by numHiddenUnits).
-#     """
-#     X = tf.placeholder(tf.float64)
+inputImageDimension = trainData[0].shape[0]
+layer_variable_suffix = 1
 
-#     # input shape[1] is the dimension of the input images
-#     W = tf.get_variable("W", shape=[inputTensor.shape[1], numHiddenUnits],
-#             dtype=tf.float64, 
-#             initializer=tf.contrib.layers.xavier_initializer())
+def WeightedSumLayer(inputTensor, numHiddenUnits): 
+    """
+    Takes activations from a previous layer and returns the weighted sum of the
+    inputs for the current hidden layer (described by numHiddenUnits).
+    """
 
-#     sess = tf.Session()
-#     init = tf.global_variables_initializer()
+    global layer_variable_suffix
+    global inputImageDimension
 
-#     sess.run(init)
+    W = tf.get_variable("W_{0}".format(layer_variable_suffix), 
+            shape=[inputTensor.shape[1], numHiddenUnits],
+            dtype=tf.float64, 
+            initializer=tf.contrib.layers.xavier_initializer())
 
-#     Sum = tf.matmul(X, W)
+    b = tf.get_variable("b_{0}".format(layer_variable_suffix), 
+            shape=[1, numHiddenUnits],
+            dtype=tf.float64,
+            initializer=tf.zeros_initializer())
 
-#     # Result shape: N x numHiddenUnits
-#     return sess.run(Sum, feed_dict={X: inputTensor})
+    layer_variable_suffix = layer_variable_suffix + 1
+
+    Y = tf.matmul(inputTensor, W) + b
+
+    return Y, W, b
 
 numHiddenUnits = 1000
 numClasses = 10
@@ -89,26 +95,14 @@ trainTarget = one_hot_encoding(trainTarget)
 validTarget = one_hot_encoding(validTarget)
 testTarget  = one_hot_encoding(testTarget)
 
-Bias1 = tf.get_variable("b1_{0}".format(bestLearningRate), 
-        shape=[1, numHiddenUnits], dtype=tf.float64,
-        initializer=tf.zeros_initializer())
+Y = tf.placeholder(tf.float64, [None, numClasses])
+X0 = tf.placeholder(tf.float64, [None, inputImageDimension])
 
-Bias2 = tf.get_variable("b2_{0}".format(bestLearningRate), 
-        shape=[1, numClasses], dtype=tf.float64, 
-        initializer=tf.zeros_initializer())
+S1, W1, b1 = WeightedSumLayer(X0, numHiddenUnits)
 
-Y = tf.placeholder(tf.float64)
-X0 = tf.placeholder(tf.float64)
-
-W1 = tf.get_variable("W1_{0}".format(bestLearningRate), shape=[inputDimension, numHiddenUnits],
-        initializer=tf.contrib.layers.xavier_initializer(), dtype=tf.float64)
-W2 = tf.get_variable("W2_{0}".format(bestLearningRate), shape=[numHiddenUnits, numClasses],
-        initializer=tf.contrib.layers.xavier_initializer(), dtype=tf.float64)
-
-S1 = tf.matmul(X0, W1) + Bias1
 X1 = tf.nn.relu(S1)
 
-S2 = tf.matmul(X1, W2) + Bias2
+S2, W2, b2 = WeightedSumLayer(X1, numClasses)
 
 # Now determine the output classification
 y_hat = S2
