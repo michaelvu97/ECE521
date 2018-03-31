@@ -57,11 +57,12 @@ testData = np.reshape(testData, [testData.shape[0], -1])
 #     # Result shape: N x numHiddenUnits
 #     return sess.run(Sum, feed_dict={X: inputTensor})
 
-numHiddenUnits = 1000
+numHiddenUnits = 500
 numClasses = 10
 inputDimension = trainData.shape[1]
-# learningRates = [0.01, 0.001, 0.0001]
+
 # Through testing, a learning rate of 0.001 yielded the fastest convergence
+# taken from 1.1.2
 bestLearningRate = 0.001
 
 lambda_weight_penalty = tf.constant(0.0003, dtype=tf.float64)
@@ -94,24 +95,38 @@ Bias1 = tf.get_variable("b1_{0}".format(bestLearningRate),
         initializer=tf.zeros_initializer())
 
 Bias2 = tf.get_variable("b2_{0}".format(bestLearningRate), 
-        shape=[1, numClasses], dtype=tf.float64, 
+        shape=[1, numHiddenUnits], dtype=tf.float64,
+        initializer=tf.zeros_initializer())
+
+Bias3 = tf.get_variable("b3_{0}".format(bestLearningRate), 
+        shape=[1, numClasses], dtype=tf.float64,
         initializer=tf.zeros_initializer())
 
 Y = tf.placeholder(tf.float64)
 X0 = tf.placeholder(tf.float64)
 
-W1 = tf.get_variable("W1_{0}".format(bestLearningRate), shape=[inputDimension, numHiddenUnits],
+W1 = tf.get_variable("W1_{0}".format(bestLearningRate), 
+        shape=[inputDimension, numHiddenUnits],
         initializer=tf.contrib.layers.xavier_initializer(), dtype=tf.float64)
-W2 = tf.get_variable("W2_{0}".format(bestLearningRate), shape=[numHiddenUnits, numClasses],
+
+W2 = tf.get_variable("W2_{0}".format(bestLearningRate), 
+        shape=[numHiddenUnits, numHiddenUnits],
+        initializer=tf.contrib.layers.xavier_initializer(), dtype=tf.float64)
+
+W3 = tf.get_variable("W3_{0}".format(bestLearningRate), 
+        shape=[numHiddenUnits, numClasses],
         initializer=tf.contrib.layers.xavier_initializer(), dtype=tf.float64)
 
 S1 = tf.matmul(X0, W1) + Bias1
 X1 = tf.nn.relu(S1)
 
 S2 = tf.matmul(X1, W2) + Bias2
+X2 = tf.nn.relu(S2)
+
+S3 = tf.matmul(X3, W3) + Bias3
 
 # Now determine the output classification
-y_hat = S2
+y_hat = S3
 
 WeightDecay = 0.5 * lambda_weight_penalty * (
         tf.reduce_sum(W1 ** 2) + 
@@ -150,16 +165,10 @@ sess = tf.Session()
 init = tf.global_variables_initializer()
 sess.run(init)
 
-epoch_training_loss = []
-epoch_validation_loss = []
-epoch_testing_loss = []
 epoch_training_error = []
 epoch_validation_error = []
 epoch_testing_error = []
 
-epoch_training_loss.append(sess.run(Loss, feed_dict=training_set))
-epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
-epoch_testing_loss.append(sess.run(Loss, feed_dict=testing_set))
 
 epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set))
 epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
@@ -180,9 +189,6 @@ for i in range(n_iterations):
     start_point = (start_point + batch_size) % len(trainData)
 
     if (i + 1) % epochSize == 0:
-        epoch_training_loss.append(sess.run(Loss, feed_dict=training_set))
-        epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
-        epoch_testing_loss.append(sess.run(Loss, feed_dict=testing_set))
 
         epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set))
         epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
@@ -194,9 +200,6 @@ for i in range(n_iterations):
         epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
         print("{0}%".format(i * 100.0 / (1.0 *n_iterations)))
 
-plt.plot(epoch_training_loss, label="Training")
-plt.plot(epoch_validation_loss, label="Validation")
-plt.plot(epoch_testing_loss, label="Testing")
 plt.legend()
 plt.title("Cross Entropy Loss, Learning Rate = " + str(bestLearningRate))
 plt.show()
