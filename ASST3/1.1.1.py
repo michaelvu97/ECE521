@@ -40,10 +40,6 @@ def WeightedSumLayer(inputTensor, numHiddenUnits):
     inputs for the current hidden layer (described by numHiddenUnits).
     """
 
-    """
-    TODO DO BIAS
-    """
-
     X = tf.placeholder(tf.float64)
 
     # input shape[1] is the dimension of the input images
@@ -51,12 +47,16 @@ def WeightedSumLayer(inputTensor, numHiddenUnits):
             dtype=tf.float64, 
             initializer=tf.contrib.layers.xavier_initializer())
 
+    b = tf.get_variable("b", shape=[1, numHiddenUnits],
+            dtype=tf.float64,
+            initializer=tf.contrib.layers.xavier_initializer())
+
     sess = tf.Session()
     init = tf.global_variables_initializer()
 
     sess.run(init)
 
-    Sum = tf.matmul(X, W)
+    Sum = tf.matmul(X, W) + b
 
     # Result shape: N x numHiddenUnits
     return sess.run(Sum, feed_dict={X: inputTensor})
