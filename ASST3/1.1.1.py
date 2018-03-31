@@ -49,7 +49,7 @@ def WeightedSumLayer(inputTensor, numHiddenUnits):
 
     b = tf.get_variable("b", shape=[1, numHiddenUnits],
             dtype=tf.float64,
-            initializer=tf.contrib.layers.xavier_initializer())
+            initializer=tf.zeros_initializer())
 
     sess = tf.Session()
     init = tf.global_variables_initializer()
