@@ -70,7 +70,7 @@ lambda_weight_penalty = tf.constant(0.0003, dtype=tf.float64)
 Theses will change once we use the full dataset
 """
 epochSize = 5
-n_iterations = 500
+n_iterations = 5000
 batch_size = 3000
 
 if testing:
@@ -160,6 +160,9 @@ epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set
 epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
 epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
 
+minValidationError = [];
+minValidationError.append(epoch_validation_error[-1]);
+
 for i in range(n_iterations):
 
     batch = {
@@ -178,6 +181,11 @@ for i in range(n_iterations):
 
         epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set))
         epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
+        if (epoch_validation_error[-1] < minValidationError[-1]):
+            minValidationError.append(epoch_validation_error[-1])
+        else:
+            minValidationError.append(minValidationError[-1])
+
         epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
         print("{0}%".format(i * 100.0 / (1.0 *n_iterations)))
 
@@ -191,6 +199,7 @@ plt.show()
 plt.plot(epoch_training_error, label="Training")
 plt.plot(epoch_validation_error, label="Validation")
 plt.plot(epoch_testing_error, label="Testing")
+plt.plot(minValidationError, label="Min Validation Error")
 plt.legend()
 plt.title("Classification Error, Learning Rate = " + str(bestLearningRate))
 plt.show()
