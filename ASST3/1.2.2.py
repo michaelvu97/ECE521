@@ -18,7 +18,7 @@ with np.load("notMNIST.npz") as data:
 Minified test/train/valid datasets for quicker testing of neural network models
 DISABLE THIS ONCE READY TO TRAIN THE NN ON THE FULL DATASET
 """
-testing = False
+testing = True
 
 if testing:
     # Clip all of the datasets
@@ -35,27 +35,33 @@ trainData = np.reshape(trainData, [trainData.shape[0], -1])
 validData = np.reshape(validData, [validData.shape[0], -1])
 testData = np.reshape(testData, [testData.shape[0], -1])
 
-# def WeightedSumLayer(inputTensor, numHiddenUnits): 
-#     """
-#     Takes activations from a previous layer and returns the weighted sum of the
-#     inputs for the current hidden layer (described by numHiddenUnits).
-#     """
-#     X = tf.placeholder(tf.float64)
+inputImageDimension = trainData[0].shape[0]
+layer_variable_suffix = 1
 
-#     # input shape[1] is the dimension of the input images
-#     W = tf.get_variable("W", shape=[inputTensor.shape[1], numHiddenUnits],
-#             dtype=tf.float64, 
-#             initializer=tf.contrib.layers.xavier_initializer())
+def WeightedSumLayer(inputTensor, numHiddenUnits): 
+    """
+    Takes activations from a previous layer and returns the weighted sum of the
+    inputs for the current hidden layer (described by numHiddenUnits).
+    """
 
-#     sess = tf.Session()
-#     init = tf.global_variables_initializer()
+    global layer_variable_suffix
+    global inputImageDimension
 
-#     sess.run(init)
+    W = tf.get_variable("W_{0}".format(layer_variable_suffix), 
+            shape=[inputTensor.shape[1], numHiddenUnits],
+            dtype=tf.float64, 
+            initializer=tf.contrib.layers.xavier_initializer())
 
-#     Sum = tf.matmul(X, W)
+    b = tf.get_variable("b_{0}".format(layer_variable_suffix), 
+            shape=[1, numHiddenUnits],
+            dtype=tf.float64,
+            initializer=tf.zeros_initializer())
 
-#     # Result shape: N x numHiddenUnits
-#     return sess.run(Sum, feed_dict={X: inputTensor})
+    layer_variable_suffix = layer_variable_suffix + 1
+
+    Y = tf.matmul(inputTensor, W) + b
+
+    return Y, W, b
 
 numHiddenUnits = 500
 numClasses = 10
@@ -90,41 +96,17 @@ trainTarget = one_hot_encoding(trainTarget)
 validTarget = one_hot_encoding(validTarget)
 testTarget  = one_hot_encoding(testTarget)
 
-Bias1 = tf.get_variable("b1_{0}".format(bestLearningRate), 
-        shape=[1, numHiddenUnits], dtype=tf.float64,
-        initializer=tf.zeros_initializer())
-
-Bias2 = tf.get_variable("b2_{0}".format(bestLearningRate), 
-        shape=[1, numHiddenUnits], dtype=tf.float64,
-        initializer=tf.zeros_initializer())
-
-Bias3 = tf.get_variable("b3_{0}".format(bestLearningRate), 
-        shape=[1, numClasses], dtype=tf.float64,
-        initializer=tf.zeros_initializer())
-
 Y = tf.placeholder(tf.float64)
-X0 = tf.placeholder(tf.float64)
+X0 = tf.placeholder(tf.float64, [None, inputImageDimension])
 
-W1 = tf.get_variable("W1_{0}".format(bestLearningRate), 
-        shape=[inputDimension, numHiddenUnits],
-        initializer=tf.contrib.layers.xavier_initializer(), dtype=tf.float64)
 
-W2 = tf.get_variable("W2_{0}".format(bestLearningRate), 
-        shape=[numHiddenUnits, numHiddenUnits],
-        initializer=tf.contrib.layers.xavier_initializer(), dtype=tf.float64)
-
-W3 = tf.get_variable("W3_{0}".format(bestLearningRate), 
-        shape=[numHiddenUnits, numClasses],
-        initializer=tf.contrib.layers.xavier_initializer(), dtype=tf.float64)
-
-S1 = tf.matmul(X0, W1) + Bias1
+S1, W1, b1 = WeightedSumLayer(X0, numHiddenUnits)
 X1 = tf.nn.relu(S1)
 
-S2 = tf.matmul(X1, W2) + Bias2
+S2, W2, b2 = WeightedSumLayer(X1, numHiddenUnits)
 X2 = tf.nn.relu(S2)
 
-S3 = tf.matmul(X3, W3) + Bias3
-
+S3, W3, b3 = WeightedSumLayer(X2, numClasses)
 # Now determine the output classification
 y_hat = S3
 
@@ -200,14 +182,17 @@ for i in range(n_iterations):
         epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
         print("{0}%".format(i * 100.0 / (1.0 *n_iterations)))
 
-plt.legend()
-plt.title("Cross Entropy Loss, Learning Rate = " + str(bestLearningRate))
-plt.show()
+# Let's print the final validation error
+print("Final validation error = " + str(minValidationError[-1]))
 
 plt.plot(epoch_training_error, label="Training")
 plt.plot(epoch_validation_error, label="Validation")
 plt.plot(epoch_testing_error, label="Testing")
-plt.plot(minValidationError, label="Min Validation Error")
+plt.plot(minValidationError, label="Min Validation Error", linestyle='--')
 plt.legend()
 plt.title("Classification Error, Learning Rate = " + str(bestLearningRate))
+plt.show()
+
+plt.plot(epoch_testing_error)
+plt.title("Testing Error with Two hidden layers (500 units)")
 plt.show()
