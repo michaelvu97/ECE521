@@ -103,7 +103,7 @@ numHiddenUnitsOptions = range(100, 600, 100)
 weightDecayOptions = np.arange(-9, -6, 0.1) # Log this
 
 
-def Simulation():
+def Simulation(index):
 
     # learningRate = 0.001
     # dropout = False
@@ -264,6 +264,20 @@ def Simulation():
     plt.title("Testing Error with One Hidden Layer (1000 units)")
     # plt.show()
 
+    # Save all of the plot data to a file.
+    # To retrieve: np.load("...").item().get("training_loss")
+    np.save("Results.1.4.1:" + str(index), 
+        {
+            "training_loss" : epoch_training_loss,
+            "validation_loss" : epoch_validation_loss,
+            "testing_loss": epoch_testing_loss,
+            "training_error" : epoch_training_error,
+            "validation_error" : epoch_validation_error,
+            "testing_error": epoch_testing_error
+        }
+    )
+
+
     return {
         "parameters": {
             "numHiddenUnits": numHiddenUnits,
@@ -281,6 +295,6 @@ def Simulation():
 paramsAndResults = []
 
 for i in range(5):
-    paramsAndResults.append(Simulation())
+    paramsAndResults.append(Simulation(i))
 
 pp.pprint(paramsAndResults)
