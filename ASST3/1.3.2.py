@@ -86,7 +86,7 @@ batch_size = 3000
 
 if testing:
     epochSize = 5
-    n_iterations = 1500
+    n_iterations = 300
     batch_size = 30
 
 #To ease computation, indices with right label are matched to 1, rest are 0.
@@ -112,6 +112,16 @@ S2, W2, b2 = WeightedSumLayer(X1, numClasses, False)
 # Now determine the output classification
 y_hat = S2
 
+# Final layer without dropout
+S1_out = tf.matmul(X0, W1)
+
+X1_out = tf.nn.relu(S1_out)
+
+S2_out = tf.matmul(X1_out, W2)
+
+# Now determine the output classification
+y_hat_out = S2_out
+
 WeightDecay = 0.5 * lambda_weight_penalty * (
         tf.reduce_sum(W1 ** 2) + 
         tf.reduce_sum(W2 ** 2)
@@ -121,8 +131,16 @@ Loss = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(logits = y_hat, labels = Y)
 ) + WeightDecay
 
+Loss_out = tf.reduce_mean(
+        tf.nn.softmax_cross_entropy_with_logits(logits = y_hat_out, labels = Y)
+)
+
 ClassificationError = tf.reduce_mean(tf.cast(
         tf.not_equal(tf.argmax(y_hat, 1), tf.argmax(Y, 1)), tf.float32)
+)
+
+ClassificationError_out = tf.reduce_mean(tf.cast(
+        tf.not_equal(tf.argmax(y_hat_out, 1), tf.argmax(Y, 1)), tf.float32)
 )
 
 Optimizer = tf.train.AdamOptimizer(learning_rate = bestLearningRate).minimize(Loss);
@@ -156,13 +174,13 @@ epoch_training_error = []
 epoch_validation_error = []
 epoch_testing_error = []
 
-epoch_training_loss.append(sess.run(Loss, feed_dict=training_set))
-epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
-epoch_testing_loss.append(sess.run(Loss, feed_dict=testing_set))
+epoch_training_loss.append(sess.run(Loss_out, feed_dict=training_set))
+epoch_validation_loss.append(sess.run(Loss_out, feed_dict=validation_set))
+epoch_testing_loss.append(sess.run(Loss_out, feed_dict=testing_set))
 
-epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set))
-epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
-epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
+epoch_training_error.append(sess.run(ClassificationError_out, feed_dict=training_set))
+epoch_validation_error.append(sess.run(ClassificationError_out, feed_dict=validation_set))
+epoch_testing_error.append(sess.run(ClassificationError_out, feed_dict=testing_set))
 
 minValidationError = [];
 minValidationError.append(epoch_validation_error[-1]);
@@ -181,18 +199,18 @@ for i in range(n_iterations):
     start_point = (start_point + batch_size) % len(trainData)
 
     if (i + 1) % epochSize == 0:
-        epoch_training_loss.append(sess.run(Loss, feed_dict=training_set))
-        epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
-        epoch_testing_loss.append(sess.run(Loss, feed_dict=testing_set))
+        epoch_training_loss.append(sess.run(Loss_out, feed_dict=training_set))
+        epoch_validation_loss.append(sess.run(Loss_out, feed_dict=validation_set))
+        epoch_testing_loss.append(sess.run(Loss_out, feed_dict=testing_set))
 
-        epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set))
-        epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
+        epoch_training_error.append(sess.run(ClassificationError_out, feed_dict=training_set))
+        epoch_validation_error.append(sess.run(ClassificationError_out, feed_dict=validation_set))
         if (epoch_validation_error[-1] < minValidationError[-1]):
             minValidationError.append(epoch_validation_error[-1])
         else:
             minValidationError.append(minValidationError[-1])
 
-        epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
+        epoch_testing_error.append(sess.run(ClassificationError_out, feed_dict=testing_set))
         print("{0}%".format(i * 100.0 / (1.0 *n_iterations)))
     
 
@@ -213,8 +231,8 @@ for i in range(n_iterations):
     if (display):
 
         # Select number of hidden layers to display
-        cols = 40
-        rows = 25
+        cols = 10
+        rows = 10
 
         img = []
         for m in range(0, rows):
