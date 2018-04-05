@@ -10,13 +10,13 @@ pp.pprint("test")
 
 with np.load("notMNIST.npz") as data:
     Data, Target = data ["images"], data["labels"]
-    np.random.seed(521)
     randIndx = np.arange(len(Data))
     np.random.shuffle(randIndx)
     Data = Data[randIndx]/255.
     Target = Target[randIndx]
     trainData, trainTarget = Data[:15000], Target[:15000]
     validData, validTarget = Data[15000:16000], Target[15000:16000]
+    np.random.seed(521)
     testData, testTarget = Data[16000:], Target[16000:]
 
 ################################################################################
@@ -127,13 +127,17 @@ def Simulation(index):
     Weights = [] # starts at 1.
     Biases = []
     Signals = []
+    Signals_out =[]
     X = [X0]
 
     S1, W1, b1 = WeightedSumLayer(X[0], numHiddenUnits, dropout)
+    S1_out = tf.matmul(X[0], W1)
 
     Signals.append(S1)
     Weights.append(W1)
     Biases.append(b1)
+
+    Signals_out.append(S1_out)
 
     X.append(tf.nn.relu(S1))
 
@@ -141,20 +145,28 @@ def Simulation(index):
     for i in range (1, numLayers):
         Si, Wi, bi = WeightedSumLayer(X[i], numHiddenUnits, dropout)
 
+
         Signals.append(Si)
         Weights.append(Wi)
         Biases.append(bi)
 
         X.append(tf.nn.relu(Si))
 
+        Si_out = tf.matmul(tf.nn.relu(Signals_out[i-1]), Wi) + bi
+        Signals_out.append(Si_out)
+
     SLast, WLast, bLast = WeightedSumLayer(X[-1], numClasses, dropout)
+
+    SLast_out = tf.matmul(tf.nn.relu(Signals_out[-1]), WLast) + bLast
 
     Signals.append(SLast)
     Weights.append(WLast)
     Biases.append(bLast)
+    Signals_out.append(SLast_out)
 
 
     y_hat = SLast
+    y_hat_out = SLast_out
 
     print(Weights)
 
@@ -164,8 +176,16 @@ def Simulation(index):
             tf.nn.softmax_cross_entropy_with_logits(logits = y_hat, labels = Y)
     ) + WeightDecay
 
+    Loss_out = tf.reduce_mean(
+        tf.nn.softmax_cross_entropy_with_logits(logits = y_hat_out, labels = Y)
+    ) + WeightDecay
+
     ClassificationError = tf.reduce_mean(tf.cast(
             tf.not_equal(tf.argmax(y_hat, 1), tf.argmax(Y, 1)), tf.float32)
+    )
+    
+    ClassificationError_out = tf.reduce_mean(tf.cast(
+        tf.not_equal(tf.argmax(y_hat_out, 1), tf.argmax(Y, 1)), tf.float32)
     )
 
     Optimizer = tf.train.AdamOptimizer(learning_rate = learningRate).minimize(Loss);
@@ -199,13 +219,13 @@ def Simulation(index):
     epoch_validation_error = []
     epoch_testing_error = []
 
-    epoch_training_loss.append(sess.run(Loss, feed_dict=training_set))
-    epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
-    epoch_testing_loss.append(sess.run(Loss, feed_dict=testing_set))
+    epoch_training_loss.append(sess.run(Loss_out, feed_dict=training_set))
+    epoch_validation_loss.append(sess.run(Loss_out, feed_dict=validation_set))
+    epoch_testing_loss.append(sess.run(Loss_out, feed_dict=testing_set))
 
-    epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set))
-    epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
-    epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
+    epoch_training_error.append(sess.run(ClassificationError_out, feed_dict=training_set))
+    epoch_validation_error.append(sess.run(ClassificationError_out, feed_dict=validation_set))
+    epoch_testing_error.append(sess.run(ClassificationError_out, feed_dict=testing_set))
 
     minValidationError = [];
     minValidationError.append(epoch_validation_error[-1]);
@@ -222,18 +242,18 @@ def Simulation(index):
         start_point = (start_point + batch_size) % len(trainData)
 
         if (i + 1) % epochSize == 0:
-            epoch_training_loss.append(sess.run(Loss, feed_dict=training_set))
-            epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
-            epoch_testing_loss.append(sess.run(Loss, feed_dict=testing_set))
+            epoch_training_loss.append(sess.run(Loss_out, feed_dict=training_set))
+            epoch_validation_loss.append(sess.run(Loss_out, feed_dict=validation_set))
+            epoch_testing_loss.append(sess.run(Loss_out, feed_dict=testing_set))
 
-            epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set))
-            epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
+            epoch_training_error.append(sess.run(ClassificationError_out, feed_dict=training_set))
+            epoch_validation_error.append(sess.run(ClassificationError_out, feed_dict=validation_set))
             if (epoch_validation_error[-1] < minValidationError[-1]):
                 minValidationError.append(epoch_validation_error[-1])
             else:
                 minValidationError.append(minValidationError[-1])
 
-            epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
+            epoch_testing_error.append(sess.run(ClassificationError_out, feed_dict=testing_set))
             print("{0}%".format(i * 100.0 / (1.0 *n_iterations)))
 
     print("PARAMETERS")
