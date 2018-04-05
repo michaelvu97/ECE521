@@ -57,7 +57,7 @@ def WeightedSumLayer(inputTensor, numHiddenUnits, useDropOut):
     W = tf.get_variable("W_{0}".format(layer_variable_suffix), 
             shape=[inputTensor.shape[1], numHiddenUnits],
             dtype=tf.float64, 
-            initializer=tf.contrib.layers.xavier_initializer())
+            initializer=tf.contrib.layers.xavier_initializer(uniform = False))
 
     b = tf.get_variable("b_{0}".format(layer_variable_suffix), 
             shape=[1, numHiddenUnits],
