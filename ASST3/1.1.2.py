@@ -18,7 +18,7 @@ with np.load("notMNIST.npz") as data:
 Minified test/train/valid datasets for quicker testing of neural network models
 DISABLE THIS ONCE READY TO TRAIN THE NN ON THE FULL DATASET
 """
-testing = True
+testing = False
 
 if testing:
     # Clip all of the datasets
@@ -50,7 +50,7 @@ def WeightedSumLayer(inputTensor, numHiddenUnits):
     W = tf.get_variable("W_{0}".format(layer_variable_suffix), 
             shape=[inputTensor.shape[1], numHiddenUnits],
             dtype=tf.float64, 
-            initializer=tf.contrib.layers.xavier_initializer())
+            initializer=tf.contrib.layers.xavier_initializer(uniform = False))
 
     b = tf.get_variable("b_{0}".format(layer_variable_suffix), 
             shape=[1, numHiddenUnits],
@@ -162,6 +162,12 @@ epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
 minValidationError = [];
 minValidationError.append(epoch_validation_error[-1]);
 
+minValidationLoss = [];
+minValidationLoss.append(epoch_validation_loss[-1]);
+
+earlyStoppingIndex_error = 0;
+earlyStoppingIndex_loss = 0;
+
 for i in range(n_iterations):
 
     batch = {
@@ -182,15 +188,33 @@ for i in range(n_iterations):
         epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
         if (epoch_validation_error[-1] < minValidationError[-1]):
             minValidationError.append(epoch_validation_error[-1])
+            earlyStoppingIndex_error = len(minValidationError) - 1
         else:
             minValidationError.append(minValidationError[-1])
+
+        if (epoch_validation_loss[-1] < minValidationLoss[-1]):
+            minValidationLoss.append(epoch_validation_loss[-1])
+            earlyStoppingIndex_loss = len(minValidationLoss) - 1
+        else:
+            minValidationLoss.append(minValidationLoss[-1])
 
         epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
         print("{0}%".format(i * 100.0 / (1.0 *n_iterations)))
 
+print ("At early stopping point (error): ")
+print ("\tTrainingError = " + str(epoch_training_error[earlyStoppingIndex_error]))
+print ("\tValidationError = " + str(epoch_validation_error[earlyStoppingIndex_error]))
+print ("\tTestingError = " + str(epoch_testing_error[earlyStoppingIndex_error]))
+
+print ("At early stopping point (loss) : ")
+print ("\tTrainingLoss = " + str(epoch_training_loss[earlyStoppingIndex_loss]))
+print ("\tValidationLoss = " + str(epoch_validation_loss[earlyStoppingIndex_loss]))
+print ("\tTestingLoss = " + str(epoch_testing_loss[earlyStoppingIndex_loss]))
+
 plt.plot(epoch_training_loss, label="Training")
 plt.plot(epoch_validation_loss, label="Validation")
 plt.plot(epoch_testing_loss, label="Testing")
+plt.plot(minValidationLoss, label="Min Validation Loss", linestyle='--')
 plt.legend()
 plt.title("Cross Entropy Loss, Learning Rate = " + str(bestLearningRate))
 plt.show()

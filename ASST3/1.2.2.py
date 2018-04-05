@@ -18,7 +18,7 @@ with np.load("notMNIST.npz") as data:
 Minified test/train/valid datasets for quicker testing of neural network models
 DISABLE THIS ONCE READY TO TRAIN THE NN ON THE FULL DATASET
 """
-testing = True
+testing = False
 
 if testing:
     # Clip all of the datasets
@@ -50,7 +50,7 @@ def WeightedSumLayer(inputTensor, numHiddenUnits):
     W = tf.get_variable("W_{0}".format(layer_variable_suffix), 
             shape=[inputTensor.shape[1], numHiddenUnits],
             dtype=tf.float64, 
-            initializer=tf.contrib.layers.xavier_initializer())
+            initializer=tf.contrib.layers.xavier_initializer(uniform = False))
 
     b = tf.get_variable("b_{0}".format(layer_variable_suffix), 
             shape=[1, numHiddenUnits],
@@ -151,13 +151,19 @@ epoch_training_error = []
 epoch_validation_error = []
 epoch_testing_error = []
 
+epoch_validation_loss = []
 
 epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set))
 epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
 epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
 
+epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
+
 minValidationError = [];
 minValidationError.append(epoch_validation_error[-1]);
+
+minTestingError = []
+minTestingError.append(epoch_testing_error[-1]);
 
 for i in range(n_iterations):
 
@@ -174,16 +180,27 @@ for i in range(n_iterations):
 
         epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set))
         epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
+
+        epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
+
         if (epoch_validation_error[-1] < minValidationError[-1]):
             minValidationError.append(epoch_validation_error[-1])
         else:
             minValidationError.append(minValidationError[-1])
 
+        if (epoch_testing_error[-1] < minTestingError[-1]):
+            minTestingError.append(epoch_testing_error[-1])
+        else:
+            minTestingError.append(minTestingError[-1])
+
         epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
         print("{0}%".format(i * 100.0 / (1.0 *n_iterations)))
 
 # Let's print the final validation error
-print("Final validation error = " + str(minValidationError[-1]))
+print("Min validation error = " + str(minValidationError[-1]))
+print("Final Validation error = " + str(epoch_validation_error[-1]))
+print("Final Validation Loss = " + str(epoch_validation_loss[-1]))
+print("Min testing error= " + str(minTestingError[-1]))
 
 plt.plot(epoch_training_error, label="Training")
 plt.plot(epoch_validation_error, label="Validation")
@@ -194,5 +211,6 @@ plt.title("Classification Error, Learning Rate = " + str(bestLearningRate))
 plt.show()
 
 plt.plot(epoch_testing_error)
+plt.plot(minTestingError, linestyle='--')
 plt.title("Testing Error with Two hidden layers (500 units)")
 plt.show()
