@@ -60,9 +60,6 @@ minimum_error = np.inf
 
 lambda_weight_penalty = tf.constant(0.0003, dtype=tf.float64)
 
-"""
-Theses will change once we use the full dataset
-"""
 epochSize = 5
 n_iterations = 5000
 batch_size = 3000

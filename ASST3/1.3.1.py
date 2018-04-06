@@ -14,23 +14,8 @@ with np.load("notMNIST.npz") as data:
     testData, testTarget = Data[16000:], Target[16000:]
 
 ################################################################################
-"""
-Minified test/train/valid datasets for quicker testing of neural network models
-DISABLE THIS ONCE READY TO TRAIN THE NN ON THE FULL DATASET
-"""
-testing = True
+
 dropOut = True
-
-if testing:
-    # Clip all of the datasets
-    trainData   = trainData[:150]
-    trainTarget = trainTarget[:150]
-    validData   = validData[:10]
-    validTarget = validTarget[:10]
-    testData    = testData[:20]
-    testTarget  = testTarget[:20]
-
-################################################################################
 
 trainData = np.reshape(trainData, [trainData.shape[0], -1])
 validData = np.reshape(validData, [validData.shape[0], -1])
@@ -78,17 +63,10 @@ bestLearningRate = 0.001
 
 lambda_weight_penalty = tf.constant(0.0003, dtype=tf.float64)
 
-"""
-Theses will change once we use the full dataset
-"""
 epochSize = 5
 n_iterations = 5000
 batch_size = 3000
 
-if testing:
-    epochSize = 5
-    n_iterations = 300
-    batch_size = 30
 
 #To ease computation, indices with right label are matched to 1, rest are 0.
 

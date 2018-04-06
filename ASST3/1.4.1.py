@@ -20,23 +20,6 @@ with np.load("notMNIST.npz") as data:
     testData, testTarget = Data[16000:], Target[16000:]
 
 ################################################################################
-"""
-Minified test/train/valid datasets for quicker testing of neural network models
-DISABLE THIS ONCE READY TO TRAIN THE NN ON THE FULL DATASET
-"""
-testing = False
-
-
-if testing:
-    # Clip all of the datasets
-    trainData   = trainData[:150]
-    trainTarget = trainTarget[:150]
-    validData   = validData[:10]
-    validTarget = validTarget[:10]
-    testData    = testData[:20]
-    testTarget  = testTarget[:20]
-
-################################################################################
 
 trainData = np.reshape(trainData, [trainData.shape[0], -1])
 validData = np.reshape(validData, [validData.shape[0], -1])
@@ -80,11 +63,6 @@ inputDimension = trainData.shape[1]
 epochSize = 5
 n_iterations = 5000
 batch_size = 3000
-
-if testing:
-    epochSize = 5
-    n_iterations = 1500
-    batch_size = 30
 
 def one_hot_encoding(data):
     encoding = np.zeros((len(data), numClasses))
