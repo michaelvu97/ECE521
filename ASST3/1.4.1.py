@@ -24,7 +24,7 @@ with np.load("notMNIST.npz") as data:
 Minified test/train/valid datasets for quicker testing of neural network models
 DISABLE THIS ONCE READY TO TRAIN THE NN ON THE FULL DATASET
 """
-testing = True
+testing = False
 
 
 if testing:
