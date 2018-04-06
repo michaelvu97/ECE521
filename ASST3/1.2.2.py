@@ -166,6 +166,9 @@ minValidationError.append(epoch_validation_error[-1]);
 minTestingError = []
 minTestingError.append(epoch_testing_error[-1]);
 
+minValidationLoss = []
+minValidationLoss.append(epoch_validation_loss[-1])
+
 for i in range(n_iterations):
 
     batch = {
@@ -195,13 +198,20 @@ for i in range(n_iterations):
         else:
             minTestingError.append(minTestingError[-1])
 
+        if (epoch_validation_loss[-1] < minValidationLoss[-1]):
+            minValidationLoss.append(epoch_validation_loss[-1])
+        else:
+            minValidationLoss.append(minValidationLoss[-1])
+
         print("{0}%".format(i * 100.0 / (1.0 *n_iterations)))
 
 # Let's print the final validation error
 print("Min validation error = " + str(minValidationError[-1]))
+print("Min validation loss = " + str(minValidationLoss[-1]))
 print("Final Validation error = " + str(epoch_validation_error[-1]))
 print("Final Validation Loss = " + str(epoch_validation_loss[-1]))
 print("Min testing error= " + str(minTestingError[-1]))
+print("Final testing error= " + str(epoch_testing_error[-1] ))
 
 plt.plot(epoch_training_error, label="Training")
 plt.plot(epoch_validation_error, label="Validation")
