@@ -112,7 +112,8 @@ y_hat = S3
 
 WeightDecay = 0.5 * lambda_weight_penalty * (
         tf.reduce_sum(W1 ** 2) + 
-        tf.reduce_sum(W2 ** 2)
+        tf.reduce_sum(W2 ** 2) + 
+        tf.reduce_sum(W3 ** 2)
 )
 
 Loss = tf.reduce_mean(
@@ -165,6 +166,9 @@ minValidationError.append(epoch_validation_error[-1]);
 minTestingError = []
 minTestingError.append(epoch_testing_error[-1]);
 
+minValidationLoss = []
+minValidationLoss.append(epoch_validation_loss[-1])
+
 for i in range(n_iterations):
 
     batch = {
@@ -180,6 +184,7 @@ for i in range(n_iterations):
 
         epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set))
         epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
+        epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
 
         epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
 
@@ -193,14 +198,20 @@ for i in range(n_iterations):
         else:
             minTestingError.append(minTestingError[-1])
 
-        epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
+        if (epoch_validation_loss[-1] < minValidationLoss[-1]):
+            minValidationLoss.append(epoch_validation_loss[-1])
+        else:
+            minValidationLoss.append(minValidationLoss[-1])
+
         print("{0}%".format(i * 100.0 / (1.0 *n_iterations)))
 
 # Let's print the final validation error
 print("Min validation error = " + str(minValidationError[-1]))
+print("Min validation loss = " + str(minValidationLoss[-1]))
 print("Final Validation error = " + str(epoch_validation_error[-1]))
 print("Final Validation Loss = " + str(epoch_validation_loss[-1]))
 print("Min testing error= " + str(minTestingError[-1]))
+print("Final testing error= " + str(epoch_testing_error[-1] ))
 
 plt.plot(epoch_training_error, label="Training")
 plt.plot(epoch_validation_error, label="Validation")
