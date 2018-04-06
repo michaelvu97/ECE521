@@ -9,6 +9,7 @@ pp = pprint.PrettyPrinter(indent=4)
 pp.pprint("test")
 
 with np.load("notMNIST.npz") as data:
+    np.random.seed(521)
     Data, Target = data ["images"], data["labels"]
     randIndx = np.arange(len(Data))
     np.random.shuffle(randIndx)
@@ -16,7 +17,6 @@ with np.load("notMNIST.npz") as data:
     Target = Target[randIndx]
     trainData, trainTarget = Data[:15000], Target[:15000]
     validData, validTarget = Data[15000:16000], Target[15000:16000]
-    np.random.seed(521)
     testData, testTarget = Data[16000:], Target[16000:]
 
 ################################################################################
