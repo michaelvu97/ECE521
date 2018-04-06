@@ -113,11 +113,11 @@ S2, W2, b2 = WeightedSumLayer(X1, numClasses, False)
 y_hat = S2
 
 # Final layer without dropout
-S1_out = tf.matmul(X0, W1)
+S1_out = tf.matmul(X0, W1) + b1
 
 X1_out = tf.nn.relu(S1_out)
 
-S2_out = tf.matmul(X1_out, W2)
+S2_out = tf.matmul(X1_out, W2) + b2
 
 # Now determine the output classification
 y_hat_out = S2_out
@@ -133,7 +133,7 @@ Loss = tf.reduce_mean(
 
 Loss_out = tf.reduce_mean(
         tf.nn.softmax_cross_entropy_with_logits(logits = y_hat_out, labels = Y)
-)
+) + WeightDecay
 
 ClassificationError = tf.reduce_mean(tf.cast(
         tf.not_equal(tf.argmax(y_hat, 1), tf.argmax(Y, 1)), tf.float32)

@@ -13,16 +13,6 @@ with np.load("notMNIST.npz") as data:
     validData, validTarget = Data[15000:16000], Target[15000:16000]
     testData, testTarget = Data[16000:], Target[16000:]
 
-testing = False
-
-if testing:
-    # Clip all of the datasets
-    trainData   = trainData[:150]
-    trainTarget = trainTarget[:150]
-    validData   = validData[:10]
-    validTarget = validTarget[:10]
-    testData    = testData[:20]
-    testTarget  = testTarget[:20]
 
 trainData = np.reshape(trainData, [trainData.shape[0], -1])
 validData = np.reshape(validData, [validData.shape[0], -1])
@@ -63,8 +53,7 @@ inputDimension = trainData.shape[1]
 # Through testing, a learning rate of 0.001 yielded the fastest convergence
 bestLearningRate = 0.001
 
-bestValidationError = []
-best_validation_error = [np.inf, np.inf, np.inf]
+best_validation_loss = [np.inf, np.inf, np.inf]
 best_testing_error = []
 best_hidden_unit = 0
 minimum_error = np.inf
@@ -77,11 +66,6 @@ Theses will change once we use the full dataset
 epochSize = 5
 n_iterations = 5000
 batch_size = 3000
-
-if testing:
-    epochSize = 5
-    n_iterations = 500
-    batch_size = 30
 
 #To ease computation, indices with right label are matched to 1, rest are 0.
 
@@ -149,30 +133,18 @@ for hiddenUnit in numHiddenUnits:
 
     epoch_training_loss = []
     epoch_validation_loss = []
-    epoch_validation1_loss = []
-    epoch_validation2_loss = []
-    epoch_validation3_loss = []
     epoch_testing_loss = []
     
     epoch_training_error = []
     epoch_validation_error = []
-    epoch_validation1_error = []
-    epoch_validation2_error = []
-    epoch_validation3_error = []
     epoch_testing_error = []
 
     epoch_training_loss.append(sess.run(Loss, feed_dict=training_set))
     epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
-    epoch_validation1_loss.append(sess.run(Loss, feed_dict=validation_set))
-    epoch_validation2_loss.append(sess.run(Loss, feed_dict=validation_set))
-    epoch_validation3_loss.append(sess.run(Loss, feed_dict=validation_set))
     epoch_testing_loss.append(sess.run(Loss, feed_dict=testing_set))
 
     epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set))
     epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
-    epoch_validation1_error.append(sess.run(ClassificationError, feed_dict=validation_set))
-    epoch_validation2_error.append(sess.run(ClassificationError, feed_dict=validation_set))
-    epoch_validation3_error.append(sess.run(ClassificationError, feed_dict=validation_set))
     epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
 
     for i in range(n_iterations):
@@ -194,49 +166,22 @@ for hiddenUnit in numHiddenUnits:
             epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set))
             epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
             epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
-            
-            if counter == 0:
-                epoch_validation1_loss.append(sess.run(Loss, feed_dict=validation_set))
-                epoch_validation1_error.append(sess.run(ClassificationError, feed_dict=validation_set))
-            
-            if counter == 1:
-                epoch_validation2_loss.append(sess.run(Loss, feed_dict=validation_set))
-                epoch_validation2_error.append(sess.run(ClassificationError, feed_dict=validation_set))
-
-            if counter == 2:
-                epoch_validation3_loss.append(sess.run(Loss, feed_dict=validation_set))
-                epoch_validation3_error.append(sess.run(ClassificationError, feed_dict=validation_set))
-
-            print("{0}%".format(i * 100.0 / (1.0 *n_iterations)))
 
         if(epoch_validation_loss[-1] < minimum_error):
             minimum_error = epoch_validation_loss[-1]
             best_hidden_unit = numHiddenUnits[counter]
             
-        if(epoch_validation_error[-1] < best_validation_error[counter]):
-            best_validation_error[counter] = epoch_validation_error[-1]
+        if(epoch_validation_loss[-1] < best_validation_loss[counter]):
+            best_validation_loss[counter] = epoch_validation_loss[-1]
 
     print("Units = " +str(numHiddenUnits[counter]))
     print("Minimum error achieved " + str(minimum_error))
     counter = counter + 1
 
-print("Validation error for 100: " + str(best_validation_error[0]))
-print("Validation error for 500: " + str(best_validation_error[1]))
-print("Validation error for 1000: " + str(best_validation_error[2]))
+print("Validation loss for 100 units: " + str(best_validation_loss[0]))
+print("Validation loss for 500 units: " + str(best_validation_loss[1]))
+print("Validation error for 1000 units: " + str(best_validation_loss[2]))
 
-print("Best validation error: " + str(min(best_validation_error)))
+print("Best validation loss: " + str(min(best_validation_loss)))
 print("Best value of hidden units: " + str(best_hidden_unit))
 
-plt.plot(epoch_validation1_loss, label="100")
-plt.plot(epoch_validation2_loss, label="500")
-plt.plot(epoch_validation3_loss, label="1000")
-plt.legend()
-plt.title("Cross Entropy Loss, Best Hidden Unit = " + str(best_hidden_unit))
-plt.show()
-
-plt.plot(epoch_validation1_error, label="100")
-plt.plot(epoch_validation2_error, label="500")
-plt.plot(epoch_validation3_error, label="1000")
-plt.legend()
-plt.title("Classification Error, Best Hidden Unit = " + str(best_hidden_unit))
-plt.show()

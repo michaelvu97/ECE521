@@ -115,11 +115,11 @@ y_hat = S2
 
 
 # Final layer without dropout
-S1_out = tf.matmul(X0, W1)
+S1_out = tf.matmul(X0, W1) + b1
 
 X1_out = tf.nn.relu(S1_out)
 
-S2_out = tf.matmul(X1_out, W2)
+S2_out = tf.matmul(X1_out, W2) + b2
 
 # Now determine the output classification
 y_hat_out = S2_out
