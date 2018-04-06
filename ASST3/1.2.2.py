@@ -112,7 +112,8 @@ y_hat = S3
 
 WeightDecay = 0.5 * lambda_weight_penalty * (
         tf.reduce_sum(W1 ** 2) + 
-        tf.reduce_sum(W2 ** 2)
+        tf.reduce_sum(W2 ** 2) + 
+        tf.reduce_sum(W3 ** 2)
 )
 
 Loss = tf.reduce_mean(
@@ -180,6 +181,7 @@ for i in range(n_iterations):
 
         epoch_training_error.append(sess.run(ClassificationError, feed_dict=training_set))
         epoch_validation_error.append(sess.run(ClassificationError, feed_dict=validation_set))
+        epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
 
         epoch_validation_loss.append(sess.run(Loss, feed_dict=validation_set))
 
@@ -193,7 +195,6 @@ for i in range(n_iterations):
         else:
             minTestingError.append(minTestingError[-1])
 
-        epoch_testing_error.append(sess.run(ClassificationError, feed_dict=testing_set))
         print("{0}%".format(i * 100.0 / (1.0 *n_iterations)))
 
 # Let's print the final validation error
